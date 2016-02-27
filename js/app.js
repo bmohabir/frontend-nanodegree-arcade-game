@@ -72,7 +72,7 @@ Enemy.prototype.update = function (dt) {
     if (this.onPatrol) {
         if (this.speed > 0 && this.x >= 407) {
             this.changeDir();
-            // return enemy to previous position to prevent
+            // return enemy to position before collision to prevent
             // getting stuck in collision loop
             this.x = xBeforeCol;
         } else if (this.speed < 0 && this.x <= -5) {
