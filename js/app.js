@@ -93,7 +93,7 @@ Enemy.prototype.update = function (dt) {
 
     // check for collision between enemies
     for (i=0; i < lastEnemy; i++) {
-        if (allEnemies[i] !== this && allEnemies[i].y === this.y && Math.abs(allEnemies[i].x - this.x) <= 94) {
+        if (allEnemies[i] !== this && allEnemies[i].y === this.y && Math.abs(allEnemies[i].x - this.x) <= 93) {
             if (allEnemies[i].sprite !== this.sprite) {
                 allEnemies[i].changeDir();
                 allEnemies[i].x = allEnemies[i].xBeforeCol;
