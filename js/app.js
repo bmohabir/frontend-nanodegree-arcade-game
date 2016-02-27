@@ -1,9 +1,13 @@
+// x and y coordinates for all tiles, adjusted for
+// proper sprite placement
+
 var rows = {
-    'sTop': 62,
-    'sMid': 145,
-    'sBot': 228,
-    'gTop': 311,
-    'gBot': 394
+    'w': -10,
+    'st': 62,
+    'sm': 145,
+    'sb': 228,
+    'gt': 311,
+    'gb': 420
 }
 
 var cols = {
@@ -111,16 +115,23 @@ Enemy.prototype.render = function() {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var allEnemies = [];
-var enemyOne = new Enemy(cols.b, rows.sBot, 120, true);
-var enemyTwo = new Enemy(cols.a, rows.sBot, 30, false);
-var enemyThree = new Enemy (cols.e, rows.sMid, -140, false);
-var enemyFour = new Enemy(cols.b, rows.sMid, -60, false);
-var enemyFive = new Enemy (cols.b, rows.sTop, 200, true);
+var enemyOne = new Enemy(cols.b, rows.sb, 120, true);
+var enemyTwo = new Enemy(cols.a, rows.sb, 30, false);
+var enemyThree = new Enemy (cols.e, rows.sm, -140, false);
+var enemyFour = new Enemy(cols.b, rows.sm, -60, false);
+var enemyFive = new Enemy (cols.b, rows.st, 200, true);
 allEnemies.push(enemyOne);
 allEnemies.push(enemyTwo);
 allEnemies.push(enemyThree);
 allEnemies.push(enemyFour);
 allEnemies.push(enemyFive);
+
+var playerTest = new Enemy(cols.a, rows.w, 100, false);
+var playerTestB = new Enemy(cols.a, rows.gb, 100, false);
+playerTest.sprite = 'images/char-boy.png';
+playerTestB.sprite = 'images/char-boy.png';
+allEnemies.push(playerTest);
+allEnemies.push(playerTestB);
 
 
 // This listens for key presses and sends the keys to your
