@@ -26,7 +26,7 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     // Ensure constructor isn't called incorrectly to keep
     // vars in correct scope
     if(!(this instanceof Enemy)) {
-        return new Enemy(posX, posY, direction, speed, onPatrol);
+        return new Enemy(posX, posY, speed, onPatrol);
     }
 
     // Assign spawn coordinates and movement direction
@@ -44,19 +44,24 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     this.onPatrol = onPatrol;
 };
 
-Enemy.prototype.lSprite = 'images/enemy-bug-left.png';
-Enemy.prototype.rSprite = 'images/enemy-bug-right.png';
+Enemy.prototype.sprites = {
+    'l': 'images/enemy-bug-left.png',
+    'r': 'images/enemy-bug-right.png'
+}
 Enemy.prototype.loadSprite = function (speed) {
-    if (0 > speed) {
-        return this.lSprite;
+    if (!speed) {
+        speed = this.speed;
+    }
+    if (speed < 0) {
+        return this.sprites.l;
     } else {
-        return this.rSprite;
+        return this.sprites.r;
     }
 }
 
 Enemy.prototype.changeDir = function () {
     this.speed = -1 * this.speed;
-    this.sprite = this.loadSprite(this.speed);
+    this.sprite = this.loadSprite();
 }
 
 // Update the enemy's position, required method for game
