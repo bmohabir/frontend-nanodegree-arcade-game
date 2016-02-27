@@ -38,10 +38,6 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     // Determines if enemy changes direction at level bounds
     // or not
     this.onPatrol = onPatrol;
-
-    // Used to store x positions before handling collision
-    // between enemy/boundary
-    this.xBeforeCol;
 };
 
 Enemy.prototype.lSprite = 'images/enemy-bug-left.png';
@@ -66,10 +62,8 @@ Enemy.prototype.update = function (dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     var lastEnemy = allEnemies.length,
+        xBeforeCol = this.x,
         i;
-
-    // store original position for collision reset
-    this.xBeforeCol = this.x;
 
     // move enemy to new position
     this.x += this.speed * dt;
@@ -78,10 +72,12 @@ Enemy.prototype.update = function (dt) {
     if (this.onPatrol) {
         if (this.speed > 0 && this.x >= 407) {
             this.changeDir();
-            this.x = this.xBeforeCol;
-        } else if (this.speed < 0 && this.x <= -4) {
+            // return enemy to previous position to prevent
+            // getting stuck in collision loop
+            this.x = xBeforeCol;
+        } else if (this.speed < 0 && this.x <= -5) {
             this.changeDir();
-            this.x = this.xBeforeCol;
+            this.x = xBeforeCol;
         }
     } else {
         if (this.speed > 0 && this.x >= 505) {
@@ -94,12 +90,8 @@ Enemy.prototype.update = function (dt) {
     // check for collision between enemies
     for (i=0; i < lastEnemy; i++) {
         if (allEnemies[i] !== this && allEnemies[i].y === this.y && Math.abs(allEnemies[i].x - this.x) <= 93) {
-            if (allEnemies[i].sprite !== this.sprite) {
-                allEnemies[i].changeDir();
-                allEnemies[i].x = allEnemies[i].xBeforeCol;
-            }
             this.changeDir();
-            this.x = this.xBeforeCol;
+            this.x = xBeforeCol;
         }
     }
 };
@@ -119,11 +111,11 @@ Enemy.prototype.render = function() {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var allEnemies = [];
-var enemyOne = new Enemy(cols.b, rows.sBot, 92, true);
-var enemyTwo = new Enemy(cols.a, rows.sBot, 42, false);
-var enemyThree = new Enemy (cols.e, rows.sMid, -70, false);
+var enemyOne = new Enemy(cols.b, rows.sBot, 120, true);
+var enemyTwo = new Enemy(cols.a, rows.sBot, 30, false);
+var enemyThree = new Enemy (cols.e, rows.sMid, -140, false);
 var enemyFour = new Enemy(cols.b, rows.sMid, -60, false);
-var enemyFive = new Enemy (cols.b, rows.sTop, 100, true);
+var enemyFive = new Enemy (cols.b, rows.sTop, 200, true);
 allEnemies.push(enemyOne);
 allEnemies.push(enemyTwo);
 allEnemies.push(enemyThree);
