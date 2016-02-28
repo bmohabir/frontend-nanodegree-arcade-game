@@ -27,14 +27,12 @@ var Enemy = function(posX, posY, speed, onPatrol) {
         return new Enemy(posX, posY, speed, onPatrol);
     }
 
-    // Assign spawn coordinates and movement direction
-    // includes default values (0 is valid for x but not y
-    // because of tile boundaries)
-    this.x = posX === undefined ? cols.a : posX;
-    this.y = posY || rows.sm;
+    // Assign spawn coordinates
+    this.x = isNaN(parseFloat(posX)) || posX > 505 || posX < -100 ? cols.a : posX;
+    this.y = isNaN(parseFloat(posY)) || posY > rows.gb || posY < rows.w ? rows.sm : posY;
 
     // Sets enemy speed factor (negative reverses direction)
-    this.speed = speed === undefined ? 100 : speed;
+    this.speed = isNaN(parseFloat(speed)) ? 100 : speed;
 
     // Loads sprite matching movement direction
     this.sprite = this.loadSprite();
@@ -120,6 +118,7 @@ var Player = function() {
     this.x = this.startPos.x;
     this.y = this.startPos.y;
     this.sprite = this.selectSprite();
+    this.lives = 5;
 };
 
 // starting position preset
@@ -147,13 +146,15 @@ Player.prototype.selectSprite = function(aSprite) {
 
 // updates player's position
 Player.prototype.update = function(x, y) {
-    // cancel update call when there is no player movement
-    if (!x && !y) {
-        return;
-    }
-    // store position before moving for boundary collision handling
-    var posBeforeCol = {'x': this.x, 'y': this.y};
+    var enemies = allEnemies.length,
+        i;
 
+    // method still works for checking enemy touch
+    // when player isn't moving
+    x = x || 0;
+    y = y || 0;
+
+    // only allow movement within tile boundaries
     if (x > 0 && this.x <= 372) {
             this.x += x;
     } else if (x < 0 && this.x >= 32) {
@@ -165,7 +166,26 @@ Player.prototype.update = function(x, y) {
             this.y += y;
     }
 
+    // check for enemy touch
+    for (i=0; i < enemies; i++) {
+        if (Math.abs(allEnemies[i].y-this.y) < 93 && Math.abs(allEnemies[i].x-this.x) < 75) {
+            this.touchEnemy();
+        }
+    }
 };
+
+// reset player position (upon death or level change)
+Player.prototype.respawn = function() {
+    this.x = this.startPos.x;
+    this.y = this.startPos.y;
+}
+
+// handles player death from enemy contact
+// TODO: tie into score/level/lives system
+Player.prototype.touchEnemy = function() {
+    this.lives--;
+    this.lives === 0 ? /* gameOver() */ player = undefined : this.respawn();
+}
 
 // renders player sprite to canvas, similar to enemy render method
 Player.prototype.render = function() {
@@ -198,17 +218,7 @@ Player.prototype.handleInput = function(key) {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var allEnemies = [];
-var enemyOne = new Enemy(cols.b, rows.sb, 120, true);
-var enemyTwo = new Enemy(cols.a, rows.sb, 30, false);
-var enemyThree = new Enemy (cols.e, rows.sm, -140, false);
-var enemyFour = new Enemy(cols.b, rows.sm, -60, false);
-var enemyFive = new Enemy (cols.b, rows.st, 200, true);
-allEnemies.push(enemyOne);
-allEnemies.push(enemyTwo);
-allEnemies.push(enemyThree);
-allEnemies.push(enemyFour);
-allEnemies.push(enemyFive);
-
+allEnemies.push(new Enemy(cols.b, rows.sm, 120, true));
 player = new Player();
 
 
