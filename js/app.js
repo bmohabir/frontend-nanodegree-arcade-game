@@ -168,24 +168,36 @@ Player.prototype.update = function(x, y) {
 
     // check for enemy touch
     for (i=0; i < enemies; i++) {
-        if (Math.abs(allEnemies[i].y-this.y) < 93 && Math.abs(allEnemies[i].x-this.x) < 77) {
+        if (Math.abs(allEnemies[i].y-this.y) <= 10 && Math.abs(allEnemies[i].x-this.x) < 77) {
             this.touchEnemy();
         }
     }
+
+    // check if level complete
+    //if (this.y)
+
 };
 
 // reset player position (upon death or level change)
 Player.prototype.respawn = function() {
     this.x = this.startPos.x;
     this.y = this.startPos.y;
-}
+};
 
 // handles player death from enemy contact
 // TODO: tie into score/level/lives system
 Player.prototype.touchEnemy = function() {
     this.lives--;
     this.lives === 0 ? /* gameOver() */ player = undefined : this.respawn();
-}
+};
+
+// handles level complete
+// TODO: more game/ui logic
+Player.prototype.win = function() {
+    /* levelComplete(); */
+    allEnemies.length = 0;
+    this.respawn();
+};
 
 // renders player sprite to canvas, similar to enemy render method
 Player.prototype.render = function() {
