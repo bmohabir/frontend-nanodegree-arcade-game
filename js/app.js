@@ -174,7 +174,9 @@ Player.prototype.update = function(x, y) {
     }
 
     // check if level complete
-    //if (this.y)
+    if (this.y < 72) {
+        this.win();
+    }
 
 };
 
