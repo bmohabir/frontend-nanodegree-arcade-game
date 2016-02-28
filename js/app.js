@@ -1,5 +1,5 @@
-// x and y coordinates for all tiles, adjusted for
-// proper sprite placement
+// x and y coordinates for placing sprites on tiles
+// (for convenience)
 var rows = {
     'w': -10,
     'st': 62,
@@ -221,6 +221,5 @@ document.addEventListener('keydown', function(e) {
         39: 'right',
         40: 'down'
     };
-
     player.handleInput(allowedKeys[e.keyCode]);
 });
