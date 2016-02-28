@@ -117,7 +117,7 @@ Enemy.prototype.render = function() {
 var Player = function() {
     this.x = this.startPos.x;
     this.y = this.startPos.y;
-    this.sprite = this.selectSprite();
+    this.sprite = this.getSprite();
     this.lives = 5;
 };
 
@@ -139,7 +139,7 @@ Player.prototype.sprites = {
 
 // selects player character sprite from player sprites object
 // TODO: character selection interface
-Player.prototype.selectSprite = function(aSprite) {
+Player.prototype.getSprite = function(aSprite) {
     aSprite = aSprite || 'default';
     return this.sprites[aSprite].sprite;
 };
@@ -168,7 +168,7 @@ Player.prototype.update = function(x, y) {
 
     // check for enemy touch
     for (i=0; i < enemies; i++) {
-        if (Math.abs(allEnemies[i].y-this.y) < 93 && Math.abs(allEnemies[i].x-this.x) < 75) {
+        if (Math.abs(allEnemies[i].y-this.y) < 93 && Math.abs(allEnemies[i].x-this.x) < 77) {
             this.touchEnemy();
         }
     }
