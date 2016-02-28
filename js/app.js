@@ -28,11 +28,13 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     }
 
     // Assign spawn coordinates and movement direction
-    this.x = posX || cols.a;
+    // includes default values (0 is valid for x but not y
+    // because of tile boundaries)
+    this.x = posX === undefined ? cols.a : posX;
     this.y = posY || rows.sm;
 
     // Sets enemy speed factor (negative reverses direction)
-    this.speed = speed || 100;
+    this.speed = speed === undefined ? 100 : speed;
 
     // Loads sprite matching movement direction
     this.sprite = this.loadSprite();
@@ -145,7 +147,7 @@ Player.prototype.selectSprite = function(aSprite) {
 
 // updates player's position
 Player.prototype.update = function(x, y) {
-    // cancel update calls when there is no player movement
+    // cancel update call when there is no player movement
     if (!x && !y) {
         return;
     }
