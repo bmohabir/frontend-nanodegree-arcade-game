@@ -29,18 +29,18 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     }
 
     // Assign spawn coordinates and movement direction
-    this.x = posX;
-    this.y = posY;
+    this.x = posX || cols.a;
+    this.y = posY || rows.sm;
 
     // Sets enemy speed factor (negative reverses direction)
-    this.speed = speed;
+    this.speed = speed || 100;
 
     // Loads sprite matching movement direction
     this.sprite = this.loadSprite();
 
     // Determines if enemy changes direction at level bounds
     // or not
-    this.onPatrol = onPatrol;
+    this.onPatrol = onPatrol || false;
 };
 
 Enemy.prototype.sprites = {
