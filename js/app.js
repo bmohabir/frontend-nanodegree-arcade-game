@@ -1,6 +1,5 @@
 // x and y coordinates for all tiles, adjusted for
 // proper sprite placement
-
 var rows = {
     'w': -10,
     'st': 62,
@@ -43,15 +42,22 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     this.onPatrol = onPatrol || false;
 };
 
+// available enemy sprites, contains left-facing and
+// right-facing sprites
 Enemy.prototype.sprites = {
     'l': 'images/enemy-bug-left.png',
     'r': 'images/enemy-bug-right.png'
 }
 
+// speed multiplier for use with powerups (TODO)
+Enemy.prototype.speedFactor = 1;
+
+// loads correct sprite based on enemy movement direction
 Enemy.prototype.loadSprite = function () {
     return (this.speed < 0) ? this.sprites.l : this.sprites.r;
 }
 
+// reverses movement direction of enemy called on
 Enemy.prototype.changeDir = function () {
     this.speed = -1 * this.speed;
     this.sprite = this.loadSprite();
@@ -64,11 +70,12 @@ Enemy.prototype.update = function (dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     var lastEnemy = allEnemies.length,
+        // store position before update to correct bad moves
         xBeforeCol = this.x,
         i;
 
     // move enemy to new position
-    this.x += this.speed * dt;
+    this.x += this.speed * this.speedFactor * dt;
 
     // check level boundary for wrap-around/collision
     if (this.onPatrol) {
