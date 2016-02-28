@@ -6,7 +6,7 @@ var rows = {
     'sm': 145,
     'sb': 228,
     'gt': 311,
-    'gb': 420
+    'gb': 404
 };
 var cols = {
     'a': 0,
@@ -69,7 +69,7 @@ Enemy.prototype.update = function (dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-    var lastEnemy = allEnemies.length,
+    var enemies = allEnemies.length,
         // store position before update to correct bad moves
         xBeforeCol = this.x,
         i;
@@ -97,7 +97,7 @@ Enemy.prototype.update = function (dt) {
     }
 
     // check for collision between enemies
-    for (i=0; i < lastEnemy; i++) {
+    for (i=0; i < enemies; i++) {
         if (allEnemies[i] !== this && allEnemies[i].y === this.y && Math.abs(allEnemies[i].x - this.x) <= 93) {
             this.changeDir();
             this.x = xBeforeCol;
@@ -144,8 +144,25 @@ Player.prototype.selectSprite = function(aSprite) {
 };
 
 // updates player's position
-Player.prototype.update = function() {
-    // TODO
+Player.prototype.update = function(x, y) {
+    // cancel update calls when there is no player movement
+    if (!x && !y) {
+        return;
+    }
+    // store position before moving for boundary collision handling
+    var posBeforeCol = {'x': this.x, 'y': this.y};
+
+    if (x > 0 && this.x <= 372) {
+            this.x += x;
+    } else if (x < 0 && this.x >= 32) {
+            this.x += x;
+    }
+    if (y > 0 && this.y <= 321) {
+            this.y += y;
+    } else if (y < 0 && this.y >= 72) {
+            this.y += y;
+    }
+
 };
 
 // renders player sprite to canvas, similar to enemy render method
@@ -153,9 +170,25 @@ Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// handles player input
-Player.prototype.handleInput = function() {
-    // TODO
+// handles player input and sends appropriate offsets to update
+// method
+Player.prototype.handleInput = function(key) {
+    switch (key) {
+        case 'left':
+            this.update(-34, 0);
+            break;
+        case 'up':
+            this.update(0, -83);
+            break;
+        case 'right':
+            this.update(34, 0);
+            break;
+        case 'down':
+            this.update(0, 83);
+            break;
+        default:
+            return;
+    }
 };
 
 
@@ -179,8 +212,7 @@ player = new Player();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
-/*
-document.addEventListener('keyup', function(e) {
+document.addEventListener('keydown', function(e) {
     var allowedKeys = {
         37: 'left',
         38: 'up',
@@ -190,4 +222,3 @@ document.addEventListener('keyup', function(e) {
 
     player.handleInput(allowedKeys[e.keyCode]);
 });
-*/
