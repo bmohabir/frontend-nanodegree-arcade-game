@@ -9,7 +9,6 @@ var rows = {
     'gt': 311,
     'gb': 420
 }
-
 var cols = {
     'a': 0,
     'b': 101,
@@ -23,8 +22,8 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
-    // Ensure constructor isn't called incorrectly to keep
-    // vars in correct scope
+    // Ensure constructor is called with new to keep vars
+    // in correct scope
     if(!(this instanceof Enemy)) {
         return new Enemy(posX, posY, speed, onPatrol);
     }
@@ -37,7 +36,7 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     this.speed = speed;
 
     // Loads sprite matching movement direction
-    this.sprite = this.loadSprite(speed);
+    this.sprite = this.loadSprite();
 
     // Determines if enemy changes direction at level bounds
     // or not
@@ -48,15 +47,9 @@ Enemy.prototype.sprites = {
     'l': 'images/enemy-bug-left.png',
     'r': 'images/enemy-bug-right.png'
 }
-Enemy.prototype.loadSprite = function (speed) {
-    if (!speed) {
-        speed = this.speed;
-    }
-    if (speed < 0) {
-        return this.sprites.l;
-    } else {
-        return this.sprites.r;
-    }
+
+Enemy.prototype.loadSprite = function () {
+    return (this.speed < 0) ? this.sprites.l : this.sprites.r;
 }
 
 Enemy.prototype.changeDir = function () {
