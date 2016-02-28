@@ -7,14 +7,14 @@ var rows = {
     'sb': 228,
     'gt': 311,
     'gb': 420
-}
+};
 var cols = {
     'a': 0,
     'b': 101,
     'c': 202,
     'd': 303,
     'e': 404
-}
+};
 
 // Enemies our player must avoid
 var Enemy = function(posX, posY, speed, onPatrol) {
@@ -47,7 +47,7 @@ var Enemy = function(posX, posY, speed, onPatrol) {
 Enemy.prototype.sprites = {
     'l': 'images/enemy-bug-left.png',
     'r': 'images/enemy-bug-right.png'
-}
+};
 
 // speed multiplier for use with powerups (TODO)
 Enemy.prototype.speedFactor = 1;
@@ -55,13 +55,13 @@ Enemy.prototype.speedFactor = 1;
 // loads correct sprite based on enemy movement direction
 Enemy.prototype.loadSprite = function () {
     return (this.speed < 0) ? this.sprites.l : this.sprites.r;
-}
+};
 
 // reverses movement direction of enemy called on
 Enemy.prototype.changeDir = function () {
     this.speed = -1 * this.speed;
     this.sprite = this.loadSprite();
-}
+};
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
@@ -114,6 +114,49 @@ Enemy.prototype.render = function() {
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
+var Player = function() {
+    this.x = this.startPos.x;
+    this.y = this.startPos.y;
+    this.sprite = this.selectSprite();
+};
+
+// starting position preset
+Player.prototype.startPos = {
+    'x': cols.c,
+    'y': rows.gb
+};
+
+// object containing available player sprites and info for which
+// sprites are available
+Player.prototype.sprites = {
+    'default': {'sprite': 'images/char-boy.png', 'available': true},
+    'catgirl': {'sprite': 'images/char-cat-girl.png', 'available': false},
+    'horngirl': {'sprite': 'images/char-horn-girl.png', 'available': false},
+    'pinkgirl': {'sprite': 'images/char-pink-girl.png', 'available': false},
+    'princess': {'sprite': 'images/char-princess-girl.png', 'available': false}
+};
+
+// selects player character sprite from player sprites object
+// TODO: character selection interface
+Player.prototype.selectSprite = function(aSprite) {
+    aSprite = aSprite || 'default';
+    return this.sprites[aSprite].sprite;
+};
+
+// updates player's position
+Player.prototype.update = function() {
+    // TODO
+};
+
+// renders player sprite to canvas, similar to enemy render method
+Player.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
+// handles player input
+Player.prototype.handleInput = function() {
+    // TODO
+};
 
 
 // Now instantiate your objects.
@@ -131,12 +174,7 @@ allEnemies.push(enemyThree);
 allEnemies.push(enemyFour);
 allEnemies.push(enemyFive);
 
-var playerTest = new Enemy(cols.a, rows.w, 100, false);
-var playerTestB = new Enemy(cols.a, rows.gb, 100, false);
-playerTest.sprite = 'images/char-boy.png';
-playerTestB.sprite = 'images/char-boy.png';
-allEnemies.push(playerTest);
-allEnemies.push(playerTestB);
+player = new Player();
 
 
 // This listens for key presses and sends the keys to your
