@@ -204,7 +204,7 @@ Player.prototype.respawn = function() {
 // TODO: more game/ui logic
 Player.prototype.touchEnemy = function() {
     this.lives--;
-    this.lives === 0 ? /* gameOver() */ player.sprite = undefined : this.respawn();
+    this.lives === 0 ? gameOver() : this.respawn();
 };
 
 // handles level complete
@@ -280,6 +280,9 @@ UI.update = function() {
 // renders UI overlay
 UI.render = function() {
 	this.renderLives();
+	if (this.gameOver) {
+		this.renderGO();
+	}
 }
 
 // display remaining lives in UI
@@ -296,6 +299,18 @@ UI.renderLives = function() {
 			spritePos -= 100;
 		}
 	}
+}
+
+// draw game over screen
+UI.renderGO = function() {
+	ctx.fillText("GAME OVER", 505/2, 333);
+	ctx.strokeText("GAME OVER", 505/2, 333);
+}
+
+// GAME OVER
+var gameOver = function() {
+	player.sprite = undefined;
+	UI.gameOver = true;
 }
 
 // Now instantiate your objects.
