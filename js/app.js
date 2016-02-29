@@ -171,6 +171,11 @@ Player.prototype.calcSpeed = function() {
 
 // updates player's position
 Player.prototype.update = function(dt) {
+	// ends game if no more lives
+	if (this.lives<1) {
+		gameOver();
+	}
+
     var enemies = allEnemies.length,
     	xSpeed = this.calcSpeed().x,
     	ySpeed = this.calcSpeed().y,
@@ -228,7 +233,9 @@ Player.prototype.respawn = function() {
 // TODO: more game/ui logic
 Player.prototype.touchEnemy = function() {
     this.lives--;
-    this.lives === 0 ? gameOver() : this.respawn();
+    if (this.lives) {
+    	this.respawn();
+    }
 };
 
 // handles level complete
@@ -304,6 +311,9 @@ UI.update = function() {
 // renders UI overlay
 UI.render = function() {
 	this.renderLives();
+	if (this.paused) {
+		this.renderPaused();
+	}
 	if (this.gameOver) {
 		this.renderGO();
 	}
@@ -325,17 +335,29 @@ UI.renderLives = function() {
 	}
 };
 
+// draw pause screen
+UI.renderPaused = function() {
+	ctx.fillText("PAUSED", 505/2, 333);
+	ctx.strokeText("PAUSED", 505/2, 333);
+};
+
 // draw game over screen
 UI.renderGO = function() {
 	ctx.fillText("GAME OVER", 505/2, 333);
 	ctx.strokeText("GAME OVER", 505/2, 333);
 };
 
+// pause/unpause the game
+var togglePause = function() {
+	UI.paused ? (globalSpeed = 1, UI.paused = false) : (globalSpeed = 0, UI.paused = true);
+}
+
 // GAME OVER
 var gameOver = function() {
 	player.sprite = undefined;
 	UI.gameOver = true;
 };
+
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies

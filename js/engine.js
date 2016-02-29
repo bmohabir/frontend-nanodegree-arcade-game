@@ -29,7 +29,7 @@ var Engine = (function(global) {
     canvas.height = 606;
     ctx.font = 'bold 60px sans-serif';
     ctx.fillStyle = 'white';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     ctx.textAlign = 'center';
     doc.body.appendChild(canvas);
