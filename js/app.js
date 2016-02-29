@@ -16,6 +16,9 @@ var cols = {
     'e': 404
 };
 
+// speed multiplier for all moving entities
+var globalSpeed = 1;
+
 // Enemies our player must avoid
 var Enemy = function(posX, posY, speed, onPatrol) {
     // Variables applied to each of our instances go here,
@@ -49,8 +52,13 @@ Enemy.prototype.sprites = {
     'r': 'images/enemy-bug-right.png'
 };
 
-// speed multiplier for use with powerups (TODO)
+// speed multiplier for enemies
 Enemy.prototype.speedFactor = 1;
+
+// calculates enemy speed multiplier
+Enemy.prototype.calcSpeed = function() {
+	return (globalSpeed * this.speedFactor * this.speed);
+};
 
 // loads correct sprite based on enemy movement direction
 Enemy.prototype.loadSprite = function () {
@@ -75,7 +83,7 @@ Enemy.prototype.update = function (dt) {
         i;
 
     // move enemy to new position
-    this.x += this.speed * this.speedFactor * dt;
+    this.x += this.calcSpeed() * dt;
 
     // check level boundary for wrap-around/collision
     if (this.onPatrol) {
@@ -147,25 +155,41 @@ Player.prototype.getSprite = function(aSprite) {
     return this.sprites[aSprite].sprite;
 };
 
+// horizontal and vertical movement speed
+Player.prototype.speed = {
+	'x': 300,
+	'y': 350
+};
+
+// player speed multipler
+Player.prototype.speedFactor = 1;
+
+// calculate player movement speed
+Player.prototype.calcSpeed = function() {
+	return {'x': this.speed.x * this.speedFactor * globalSpeed, 'y': this.speed.y * this.speedFactor * globalSpeed};
+}
+
 // updates player's position
 Player.prototype.update = function(dt) {
     var enemies = allEnemies.length,
+    	xSpeed = this.calcSpeed().x,
+    	ySpeed = this.calcSpeed().y,
         i;
 
     // smooth movement animation
     if (this.xCounter > 0) {
-    	this.x += 300 * dt;
+    	this.x += xSpeed * dt;
     	this.xCounter--;
     } else if (this.xCounter < 0) {
-    	this.x -= 300 * dt;
+    	this.x -= xSpeed * dt;
     	this.xCounter++;
     }
 
     if (this.yCounter > 0) {
-    	this.y += 350 * dt;
+    	this.y += ySpeed * dt;
     	this.yCounter--;
     } else if (this.yCounter < 0) {
-    	this.y -= 350 * dt;
+    	this.y -= ySpeed * dt;
     	this.yCounter++;
     }
 
@@ -275,7 +299,7 @@ var UI = {};
 // calls required update methods for UI elements
 UI.update = function() {
 	// TODO (not needed yet)
-}
+};
 
 // renders UI overlay
 UI.render = function() {
@@ -283,7 +307,7 @@ UI.render = function() {
 	if (this.gameOver) {
 		this.renderGO();
 	}
-}
+};
 
 // display remaining lives in UI
 UI.renderLives = function() {
@@ -299,19 +323,19 @@ UI.renderLives = function() {
 			spritePos -= 100;
 		}
 	}
-}
+};
 
 // draw game over screen
 UI.renderGO = function() {
 	ctx.fillText("GAME OVER", 505/2, 333);
 	ctx.strokeText("GAME OVER", 505/2, 333);
-}
+};
 
 // GAME OVER
 var gameOver = function() {
 	player.sprite = undefined;
 	UI.gameOver = true;
-}
+};
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
