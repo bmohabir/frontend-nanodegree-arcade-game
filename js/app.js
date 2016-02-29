@@ -182,7 +182,7 @@ Player.prototype.update = function(dt) {
 
     // check for enemy touch
     for (i=0; i < enemies; i++) {
-        if (((0 <= allEnemies[i].y - this.y && allEnemies[i].y - this.y <= 60) || (0 <= this.y - allEnemies[i].y && this.y - allEnemies[i].y <= 75)) && Math.abs(allEnemies[i].x-this.x) < 77) {
+        if (((0 <= allEnemies[i].y - this.y && allEnemies[i].y - this.y <= 60) || (0 <= this.y - allEnemies[i].y && this.y - allEnemies[i].y <= 75)) && Math.abs(allEnemies[i].x-this.x) < 70) {
             this.touchEnemy();
         }
     }
