@@ -1,7 +1,7 @@
 // x and y coordinates for placing sprites on tiles
 // (for convenience)
 var rows = {
-    'w': -10,
+    'w': -8,
     'st': 62,
     'sm': 145,
     'sb': 228,
@@ -119,7 +119,7 @@ var Player = function() {
     this.y = this.startPos.y;
     this.sprite = this.getSprite();
     this.lives = 3;
-    // used for smoother movement
+    // used for smooth movement
     this.xCounter = 0;
     this.yCounter = 0;
 };
@@ -141,7 +141,7 @@ Player.prototype.sprites = {
 };
 
 // selects player character sprite from player sprites object
-// TODO: character selection interface
+// TODO: character selection
 Player.prototype.getSprite = function(aSprite) {
     aSprite = aSprite || 'default';
     return this.sprites[aSprite].sprite;
@@ -152,6 +152,7 @@ Player.prototype.update = function(dt) {
     var enemies = allEnemies.length,
         i;
 
+    // smooth movement animation
     if (this.xCounter > 0) {
     	this.x += 300 * dt;
     	this.xCounter--;
@@ -187,7 +188,7 @@ Player.prototype.update = function(dt) {
     }
 
     // check if level complete
-    if (this.y <= -8) {
+    if (this.y <= rows.w) {
         this.win();
     }
 
@@ -200,7 +201,7 @@ Player.prototype.respawn = function() {
 };
 
 // handles player death from enemy contact
-// TODO: tie into score/level/lives system
+// TODO: more game/ui logic
 Player.prototype.touchEnemy = function() {
     this.lives--;
     this.lives === 0 ? /* gameOver() */ player.sprite = undefined : this.respawn();
@@ -216,18 +217,22 @@ Player.prototype.win = function() {
 
 // renders player sprite to canvas, similar to enemy render method
 Player.prototype.render = function() {
+	// prevent error in cases where player should not be visible (ie. game over)
 	if (this.sprite) {
 		ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 	}
 };
 
-// handles player input and sends appropriate offsets to update
-// method
+// generates movement values based on player input
 Player.prototype.handleInput = function(key, step) {
     if (step === 'down') {
     	switch (key) {
 	        case 'left':
+	        	// prevent diagonal drift
 	        	this.yCounter = 0;
+	        	// immediately cancel movement in opposite direction,
+	        	// otherwise continue movement (counter value set to avoid key
+	        	// repeat delay)
 	        	this.xCounter <= 0 ? this.xCounter -= 34 : this.xCounter = -34;
 	        	break;
 	        case 'up':
@@ -246,6 +251,7 @@ Player.prototype.handleInput = function(key, step) {
     } else {
     	switch (key) {
 	        case 'left':
+	        	// stop moving on keyup to prevent drifting
 	        	this.xCounter = 0;
 	            break;
 	        case 'up':
@@ -263,11 +269,12 @@ Player.prototype.handleInput = function(key, step) {
 };
 
 // user interface
+// TODO: lots
 var UI = {};
 
 // calls required update methods for UI elements
 UI.update = function() {
-	// TODO
+	// TODO (not needed yet)
 }
 
 // renders UI overlay
@@ -275,6 +282,7 @@ UI.render = function() {
 	this.renderLives();
 }
 
+// display remaining lives in UI
 UI.renderLives = function() {
 	var spritePos = 1550,
 		i;
@@ -287,8 +295,6 @@ UI.renderLives = function() {
 			ctx.restore();
 			spritePos -= 100;
 		}
-
-		//ctx.drawImage(Resources.get(this.sprite), 0, 0);
 	}
 }
 
@@ -296,14 +302,17 @@ UI.renderLives = function() {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var allEnemies = [];
+// TODO: game/level logic to handle player and enemy spawning
 allEnemies.push(Enemy(cols.a, rows.sm, 150, true));
 allEnemies.push(Enemy(cols.e, rows.sb, -100, false));
-allEnemies.push(Enemy(cols.c, rows.st, 100, false));
+allEnemies.push(Enemy(cols.a, rows.st, 100, false));
+allEnemies.push(Enemy(cols.d, rows.st, 100, false));
 player = new Player();
 
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
+// tweaked for more precise controls and WASD
 var allowedKeys = {
         37: 'left',
         38: 'up',

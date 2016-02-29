@@ -95,6 +95,7 @@ var Engine = (function(global) {
             enemy.update(dt);
         });
         player.update(dt);
+        // added for UI (ie. paused/game over states)
         UI.update();
     }
 
@@ -153,6 +154,7 @@ var Engine = (function(global) {
         });
 
         player.render();
+        // added for UI overlay
         UI.render();
     }
 
