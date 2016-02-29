@@ -119,6 +119,9 @@ var Player = function() {
     this.y = this.startPos.y;
     this.sprite = this.getSprite();
     this.lives = 5;
+    // used for smoother movement
+    this.xCounter = 0;
+    this.yCounter = 0;
 };
 
 // starting position preset
@@ -145,36 +148,46 @@ Player.prototype.getSprite = function(aSprite) {
 };
 
 // updates player's position
-Player.prototype.update = function(x, y) {
+Player.prototype.update = function(dt) {
     var enemies = allEnemies.length,
         i;
 
-    // method still works for checking enemy touch
-    // when player isn't moving
-    x = x || 0;
-    y = y || 0;
+    if (this.xCounter > 0) {
+    	this.x += 300 * dt;
+    	this.xCounter--;
+    } else if (this.xCounter < 0) {
+    	this.x -= 300 * dt;
+    	this.xCounter++;
+    }
 
-    // only allow movement within tile boundaries
-    if (x > 0 && this.x <= 372) {
-            this.x += x;
-    } else if (x < 0 && this.x >= 32) {
-            this.x += x;
+    if (this.yCounter > 0) {
+    	this.y += 350 * dt;
+    	this.yCounter--;
+    } else if (this.yCounter < 0) {
+    	this.y -= 350 * dt;
+    	this.yCounter++;
     }
-    if (y > 0 && this.y <= 321) {
-            this.y += y;
-    } else if (y < 0 && this.y >= 72) {
-            this.y += y;
+
+    // keep player in bounds
+    if (this.x > 421) {
+            this.x = 421;
+    } else if (this.x < -17) {
+            this.x = -17;
     }
+    if (this.y > 404)
+	{
+		this.y = 404;
+	}
 
     // check for enemy touch
     for (i=0; i < enemies; i++) {
-        if (Math.abs(allEnemies[i].y-this.y) <= 10 && Math.abs(allEnemies[i].x-this.x) < 77) {
+        if (((0 <= allEnemies[i].y - this.y && allEnemies[i].y - this.y <= 60) || (0 <= this.y - allEnemies[i].y && this.y - allEnemies[i].y <= 75)) && Math.abs(allEnemies[i].x-this.x) < 77) {
             this.touchEnemy();
         }
     }
 
     // check if level complete
-    if (this.y < 72) {
+    if (this.y <= -8) {
         this.win();
     }
 
@@ -208,23 +221,43 @@ Player.prototype.render = function() {
 
 // handles player input and sends appropriate offsets to update
 // method
-Player.prototype.handleInput = function(key) {
-    switch (key) {
-        case 'left':
-            this.update(-34, 0);
-            break;
-        case 'up':
-            this.update(0, -83);
-            break;
-        case 'right':
-            this.update(34, 0);
-            break;
-        case 'down':
-            this.update(0, 83);
-            break;
-        default:
-            return;
+Player.prototype.handleInput = function(key, step) {
+    if (step === 'down') {
+    	switch (key) {
+	        case 'left':
+	        	this.yCounter = 0;
+	        	this.xCounter <= 0 ? this.xCounter -= 34 : this.xCounter = -34;
+	        	break;
+	        case 'up':
+	        	this.xCounter = 0;
+	        	this.yCounter <= 0 ? this.yCounter -= 34 : this.yCounter = -34;
+	            break;
+	        case 'right':
+	        	this.yCounter = 0;
+	        	this.xCounter >= 0 ? this.xCounter += 34 : this.xCounter = 34;
+	            break;
+	        case 'down':
+	        	this.xCounter = 0;
+	            this.yCounter >= 0 ? this.yCounter += 34 : this.yCounter = 34;
+	            break;
+	    }
+    } else {
+    	switch (key) {
+	        case 'left':
+	        	this.xCounter = 0;
+	            break;
+	        case 'up':
+	        	this.yCounter = 0;
+	            break;
+	        case 'right':
+	        	this.xCounter = 0;
+	            break;
+	        case 'down':
+	        	this.yCounter = 0;
+	            break;
+	    }
     }
+
 };
 
 
@@ -232,18 +265,30 @@ Player.prototype.handleInput = function(key) {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var allEnemies = [];
-allEnemies.push(new Enemy(cols.b, rows.sm, 120, true));
+allEnemies.push(Enemy(cols.a, rows.sm, 150, true));
+allEnemies.push(Enemy(cols.e, rows.sb, -100, false));
+allEnemies.push(Enemy(cols.c, rows.st, 100, false));
 player = new Player();
 
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keydown', function(e) {
-    var allowedKeys = {
+var allowedKeys = {
         37: 'left',
         38: 'up',
         39: 'right',
-        40: 'down'
-    };
-    player.handleInput(allowedKeys[e.keyCode]);
+        40: 'down',
+        65: 'left',
+        87: 'up',
+        68: 'right',
+        83: 'down'
+};
+// use keydown for fast response and hold
+document.addEventListener('keydown', function(e) {
+    player.handleInput(allowedKeys[e.keyCode], 'down');
 });
+// use keyup to stop movement
+document.addEventListener('keyup', function(e) {
+    player.handleInput(allowedKeys[e.keyCode], 'up');
+});
+
