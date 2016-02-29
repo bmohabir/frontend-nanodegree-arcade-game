@@ -118,7 +118,7 @@ var Player = function() {
     this.x = this.startPos.x;
     this.y = this.startPos.y;
     this.sprite = this.getSprite();
-    this.lives = 5;
+    this.lives = 3;
     // used for smoother movement
     this.xCounter = 0;
     this.yCounter = 0;
@@ -203,7 +203,7 @@ Player.prototype.respawn = function() {
 // TODO: tie into score/level/lives system
 Player.prototype.touchEnemy = function() {
     this.lives--;
-    this.lives === 0 ? /* gameOver() */ player = undefined : this.respawn();
+    this.lives === 0 ? /* gameOver() */ player.sprite = undefined : this.respawn();
 };
 
 // handles level complete
@@ -216,7 +216,9 @@ Player.prototype.win = function() {
 
 // renders player sprite to canvas, similar to enemy render method
 Player.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+	if (this.sprite) {
+		ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+	}
 };
 
 // handles player input and sends appropriate offsets to update
@@ -260,6 +262,35 @@ Player.prototype.handleInput = function(key, step) {
 
 };
 
+// user interface
+var UI = {};
+
+// calls required update methods for UI elements
+UI.update = function() {
+	// TODO
+}
+
+// renders UI overlay
+UI.render = function() {
+	this.renderLives();
+}
+
+UI.renderLives = function() {
+	var spritePos = 1550,
+		i;
+
+	for (i=0; i<=player.lives; i++) {
+		if (i) {
+			ctx.save();
+			ctx.scale(0.3, 0.3);
+			ctx.drawImage(Resources.get(player.sprite), spritePos, 150);
+			ctx.restore();
+			spritePos -= 100;
+		}
+
+		//ctx.drawImage(Resources.get(this.sprite), 0, 0);
+	}
+}
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
