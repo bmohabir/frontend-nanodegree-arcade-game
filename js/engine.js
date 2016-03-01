@@ -97,8 +97,9 @@ var Engine = (function(global) {
             enemy.update(dt);
         });
         player.update(dt);
-        // added for UI (ie. paused/game over states)
+        // added for UI and game states
         UI.update(dt);
+        Game.update();
     }
 
     /* This function initially draws the "game level", it will then call

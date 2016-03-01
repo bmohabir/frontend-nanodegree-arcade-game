@@ -134,6 +134,8 @@ var Player = function() {
     this.lives = 4;
     this.xMove = 0;
     this.yMove = 0;
+    // stores shift key state
+    this.isShifting = false;
 };
 
 // starting position preset
@@ -168,9 +170,6 @@ Player.prototype.speed = {
 // player speed multipler
 Player.prototype.speedFactor = 1;
 
-// stores shift key state
-Player.prototype.isShifting = false;
-
 // calculate player movement speed
 Player.prototype.calcSpeed = function() {
     if (this.isShifting) {
@@ -183,7 +182,7 @@ Player.prototype.calcSpeed = function() {
 // updates player's position
 Player.prototype.update = function(dt) {
 	// ends game if no more lives
-	if (this.lives<1) {
+	if (this.lives < 1) {
 		Game.gameOver();
 	}
 
@@ -236,6 +235,7 @@ Player.prototype.respawn = function() {
     this.y = this.startPos.y;
     this.xMove = 0;
     this.yMove = 0;
+    this.inTheWater = false;
 };
 
 // handles player death from enemy contact
@@ -248,9 +248,8 @@ Player.prototype.touchEnemy = function() {
 
 // handles level complete
 Player.prototype.win = function() {
-    /* Game.levelComplete(); */
-    allEnemies.length = 0;
-    this.respawn();
+    this.inTheWater = true;
+    Game.levelComplete();
 };
 
 // renders player sprite to canvas, similar to enemy render method
@@ -265,7 +264,7 @@ Player.prototype.render = function() {
 Player.prototype.handleInput = function(key, step, isShifting) {
     // pause when P is pressed
     if (key === 'p' && step === 'down' && UI.pauseButton) {
-    	UI.togglePause();
+    	Game.togglePause();
     	return;
     }
 
@@ -322,15 +321,15 @@ var UI = {};
 // calls required update methods for UI elements
 // TODO: more game/level logic
 UI.update = function(dt) {
-	// timer for level start event
+	// timers for level start and complete events
     if (Game.levelStarted) {
-        player.speedFactor = 0;
         this.pauseButton = false;
-        UI.timer > 0 ? UI.timer -= 1.5 * dt : Game.levelStarted = false;
+        UI.timer > 0 ? UI.timer -= 1.5 * dt : (Game.levelStarted = false, UI.timer = 3.0);
+    } else if (player.inTheWater) {
+        this.pauseButton = false;
+        UI.timer > 0 ? UI.timer -= 1.5 * dt : (player.inTheWater = false, UI.timer = 3.0);
     } else if (!Game.isGameOver) {
-        player.speedFactor = 1;
         this.pauseButton = true;
-        UI.timer = 100;
     }
 };
 
@@ -343,12 +342,17 @@ UI.render = function() {
     this.renderLevel(Game.level);
 	this.renderLives();
 	this.renderPaused();
+    this.renderLevelComplete();
 	this.renderGO();
 };
 
 // display remaining lives in UI
 UI.renderLives = function() {
-	var spritePos = 1120,
+	if(!player.sprite) {
+        return;
+    }
+
+    var spritePos = 1120,
 		i;
 
 	for (i=0; i<player.lives; i++) {
@@ -400,6 +404,19 @@ UI.renderLevel = function(level) {
         ctx.fillStyle = 'white';
         ctx.fillText('Level ' + level, 505/2, 333);
         ctx.strokeText('Level ' + level, 505/2, 333);
+        ctx.globalAlpha = 1.0;
+    }
+};
+
+// draws level complete
+UI.renderLevelComplete = function() {
+    if (player.inTheWater) {
+        ctx.lineWidth = 3;
+        ctx.font = 'bold 60px sans-serif';
+        ctx.globalAlpha = UI.timer > 1.0 ? 1.0 : UI.timer + 0.1;
+        ctx.fillStyle = 'white';
+        ctx.fillText('Level Complete!', 505/2, 333);
+        ctx.strokeText('Level Complete!', 505/2, 333);
         ctx.globalAlpha = 1.0;
     }
 };
@@ -458,9 +475,21 @@ Game.levelStarted = true;
 // object containing levels (enemies and powerups)
 Game.levels = {
     1: [
-        Enemy(cols.a, rows.sm, 350, true), Enemy(cols.e, rows.sb, -450, false), Enemy(cols.a, rows.st, 350, false), Enemy(cols.d, rows.st, 350, false)
+        Enemy(cols.a, rows.sm, 100, false), Enemy(cols.d, rows.sb, 100, false), Enemy(cols.c, rows.st, 100, false)
+    ],
+    2: [
+        Enemy(cols.a, rows.sm, 250, true), Enemy(cols.e, rows.sb, -350, false), Enemy(cols.a, rows.st, 250, false), Enemy(cols.d, rows.st, 250, false)
     ]
 };
+
+// game update for changing states
+Game.update = function() {
+    player.speedFactor = (this.levelStarted || player.inTheWater || this.isGameOver) ? 0 : 1;
+    if ((!player.inTheWater) && allEnemies.length === 0) {
+        var nextLevel = this.level + 1;
+        this.levels[nextLevel] instanceof Array ? (player.respawn(), this.playLevel(nextLevel)) : this.gameOver();
+    }
+}
 
 // pause/unpause the game
 Game.togglePause = function(force) {
@@ -473,6 +502,7 @@ Game.togglePause = function(force) {
 
 // GAME OVER
 Game.gameOver = function() {
+    player.respawn();
     player.sprite = undefined;
     UI.pauseButton = false;
     this.isGameOver = true;
@@ -480,13 +510,19 @@ Game.gameOver = function() {
 
 // spawn level entities
 Game.playLevel = function(level) {
+    this.level = level;
     this.levels[level].forEach(function(entity) {
         if (entity instanceof Enemy) {
             allEnemies.push(entity);
         }
     });
-    Game.levelStarted = true;
+    this.levelStarted = true;
 };
+
+// prepare for level change/game over
+Game.levelComplete = function() {
+    allEnemies.length = 0;
+}
 
 // TODO: levelComplete, powerups, character select
 
@@ -521,7 +557,7 @@ document.addEventListener("click", UI.handleClicks);
 // pause game on loss of focus or stacked up calls will send enemies all over the place
 window.addEventListener('blur', function(){
 	// no pausing on game over screen
-    if (!Game.isGameOver) {
+    if (!Game.isGameOver && !Game.levelStarted && !(allEnemies.length === 0)) {
     	Game.togglePause(true);
     }
 });
