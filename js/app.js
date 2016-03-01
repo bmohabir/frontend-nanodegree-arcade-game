@@ -132,6 +132,7 @@ var Player = function() {
     this.y = this.startPos.y;
     this.sprite = this.getSprite();
     this.lives = 4;
+    this.score = 0;
     this.xMove = 0;
     this.yMove = 0;
     // stores shift key state
@@ -215,15 +216,18 @@ Player.prototype.update = function(dt) {
 		this.y = 404;
 	}
 
-    // check for enemy touch
+    // check for enemy touch/graze
     for (i=0; i < enemies; i++) {
-        if (((0 <= allEnemies[i].y - this.y && allEnemies[i].y - this.y <= 60) || (0 <= this.y - allEnemies[i].y && this.y - allEnemies[i].y <= 75)) && Math.abs(allEnemies[i].x-this.x) < 70) {
+        if (((allEnemies[i].y > this.y && allEnemies[i].y - this.y <= 56) || (this.y > allEnemies[i].y && this.y - allEnemies[i].y <= 73)) && Math.abs(allEnemies[i].x-this.x) < 75) {
             this.touchEnemy();
+        } else if (((allEnemies[i].y > this.y && allEnemies[i].y - this.y <= 62) || (this.y > allEnemies[i].y && this.y - allEnemies[i].y <= 79)) && Math.abs(allEnemies[i].x-this.x) < 75) {
+            // player gains points for grazing enemy sprites
+            this.score += Math.round(30 * dt);
         }
     }
 
     // check if level complete
-    if (this.y <= rows.w) {
+    if (!this.won && (this.y <= rows.w)) {
         this.win();
     }
 
@@ -236,11 +240,13 @@ Player.prototype.respawn = function() {
     this.xMove = 0;
     this.yMove = 0;
     this.inTheWater = false;
+    this.won = false;
 };
 
 // handles player death from enemy contact
 Player.prototype.touchEnemy = function() {
     this.lives--;
+    (this.score - 50) >= 0 ? this.score -= 50 : this.score = 0;
     if (this.lives) {
     	this.respawn();
     }
@@ -248,8 +254,26 @@ Player.prototype.touchEnemy = function() {
 
 // handles level complete
 Player.prototype.win = function() {
+    var level = Game.level,
+        dt;
+
+    Game.levelStopTime = Date.now();
+    dt = Game.levelStopTime - Game.levelStartTime;
+
+    // bonus points for fast level completion
+    if (dt <= 3000) {
+        this.score += level * 600;
+    } else if (dt <= 5000) {
+        this.score += level * 400;
+    } else if (dt <= 10000) {
+        this.score += level * 200;
+    } else if (dt <= 15000) {
+        this.score += level * 100;
+    }
+    this.score += level * 100;
     this.inTheWater = true;
     Game.levelComplete();
+    this.won = true;
 };
 
 // renders player sprite to canvas, similar to enemy render method
@@ -324,7 +348,7 @@ UI.update = function(dt) {
 	// timers for level start and complete events
     if (Game.levelStarted) {
         this.pauseButton = false;
-        UI.timer > 0 ? UI.timer -= 1.5 * dt : (Game.levelStarted = false, UI.timer = 3.0);
+        UI.timer > 0 ? UI.timer -= 1.5 * dt : (Game.levelStarted = false, UI.timer = 3.0, Game.levelStartTime = Date.now());
     } else if (player.inTheWater) {
         this.pauseButton = false;
         UI.timer > 0 ? UI.timer -= 1.5 * dt : (player.inTheWater = false, UI.timer = 3.0);
@@ -344,11 +368,12 @@ UI.render = function() {
 	this.renderPaused();
     this.renderLevelComplete();
 	this.renderGO();
+    this.renderScore();
 };
 
 // display remaining lives in UI
 UI.renderLives = function() {
-	if(!player.sprite) {
+	if(!player.sprite || player.inTheWater) {
         return;
     }
 
@@ -366,6 +391,16 @@ UI.renderLives = function() {
 	}
 };
 
+// display player score
+UI.renderScore = function() {
+    ctx.font = 'bold 32px sans-serif';
+    ctx.lineWidth = 2;
+    ctx.fillText(''+player.score, 505/2, 100);
+    ctx.strokeText(''+player.score, 505/2, 100);
+    ctx.font = 'bold 60px sans-serif'
+    ctx.lineWidth = 3;
+}
+
 // whether or not pause button is applicable
 UI.pauseButton = true;
 
@@ -376,10 +411,9 @@ UI.renderPauseButton = function() {
 		ctx.fillStyle = 'red';
 		ctx.arc(46, 90, 22, 0, 2*Math.PI);
 		ctx.fill();
+        ctx.fillStyle = 'white';
 		ctx.closePath;
 		Game.paused ? (
-			ctx.lineWidth = 2,
-			ctx.fillStyle = 'white',
 			ctx.beginPath(),
 			ctx.moveTo(37, 80),
 			ctx.lineTo(58, 90),
@@ -387,10 +421,9 @@ UI.renderPauseButton = function() {
 			ctx.fill(),
 			ctx.closePath()
 		) : (
-			ctx.lineWidth = 2,
 			ctx.font = 'bold 28px Impact',
-			ctx.fillStyle = 'white',
-			ctx.fillText("I I", 45, 102)
+			ctx.fillText("I I", 45, 102),
+            ctx.font = 'bold 60px sans-serif'
 		);
 	}
 };
@@ -398,10 +431,7 @@ UI.renderPauseButton = function() {
 // draws level start
 UI.renderLevel = function(level) {
     if (Game.levelStarted) {
-        ctx.lineWidth = 3;
-        ctx.font = 'bold 60px sans-serif';
         ctx.globalAlpha = UI.timer > 1.0 ? 1.0 : UI.timer + 0.1;
-        ctx.fillStyle = 'white';
         ctx.fillText('Level ' + level, 505/2, 333);
         ctx.strokeText('Level ' + level, 505/2, 333);
         ctx.globalAlpha = 1.0;
@@ -411,10 +441,7 @@ UI.renderLevel = function(level) {
 // draws level complete
 UI.renderLevelComplete = function() {
     if (player.inTheWater) {
-        ctx.lineWidth = 3;
-        ctx.font = 'bold 60px sans-serif';
         ctx.globalAlpha = UI.timer > 1.0 ? 1.0 : UI.timer + 0.1;
-        ctx.fillStyle = 'white';
         ctx.fillText('Level Complete!', 505/2, 333);
         ctx.strokeText('Level Complete!', 505/2, 333);
         ctx.globalAlpha = 1.0;
@@ -424,9 +451,6 @@ UI.renderLevelComplete = function() {
 // draw pause screen
 UI.renderPaused = function() {
 	if (Game.paused) {
-		ctx.lineWidth = 3;
-		ctx.font = 'bold 60px sans-serif';
-		ctx.fillStyle = 'white';
 		ctx.fillText('PAUSED', 505/2, 333);
 		ctx.strokeText('PAUSED', 505/2, 333);
 	}
@@ -435,9 +459,6 @@ UI.renderPaused = function() {
 // draw game over screen
 UI.renderGO = function() {
 	if (Game.isGameOver) {
-		ctx.lineWidth = 3;
-		ctx.font = 'bold 60px sans-serif';
-		ctx.fillStyle = 'white';
 		ctx.fillText('GAME OVER', 505/2, 333);
 		ctx.strokeText('GAME OVER', 505/2, 333);
 	}
@@ -453,6 +474,7 @@ UI.handleClicks = function(e) {
 		Game.togglePause();
 	}
 };
+
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies

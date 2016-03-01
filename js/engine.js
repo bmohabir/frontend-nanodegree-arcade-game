@@ -28,7 +28,10 @@ var Engine = (function(global) {
     canvas.width = 505;
     canvas.height = 606;
     ctx.lineJoin = 'round';
+    ctx.lineWidth = 3;
     ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 60px sans-serif';
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
