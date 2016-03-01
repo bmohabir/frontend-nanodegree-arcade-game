@@ -461,5 +461,8 @@ document.addEventListener("click", UI.handleClicks);
 
 // pause game on loss of focus or stacked up calls will send enemies all over the place
 window.addEventListener('blur', function(){
-    UI.togglePause(true);
+	// no pausing on game over screen
+    if (!UI.isGameOver) {
+    	UI.togglePause(true);
+    }
 });
