@@ -581,5 +581,15 @@ window.addEventListener('blur', function(){
 	// no pausing on game over screen
     if (!Game.isGameOver && !Game.levelStarted && !(allEnemies.length === 0)) {
     	Game.togglePause(true);
+    } else {
+        // fake pause if lost focus during special state
+        globalSpeed = 0;
+    }
+});
+
+// undo fake pause on focus resume
+window.addEventListener('focus', function(){
+    if (!Game.paused && globalSpeed === 0) {
+        globalSpeed = 1;
     }
 });
