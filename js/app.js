@@ -171,7 +171,7 @@ Player.prototype.speedFactor = 1;
 // calculate player movement speed
 Player.prototype.calcSpeed = function() {
 	return {'x': this.speed.x * this.speedFactor * globalSpeed, 'y': this.speed.y * this.speedFactor * globalSpeed};
-}
+};
 
 // updates player's position
 Player.prototype.update = function(dt) {
@@ -406,8 +406,12 @@ UI.handleClicks = function(e) {
 };
 
 // pause/unpause the game
-UI.togglePause = function() {
-	this.paused ? (globalSpeed = 1, UI.paused = false) : (globalSpeed = 0, UI.paused = true);
+UI.togglePause = function(force) {
+	force = force || false;
+	if (force) {
+		this.paused = false;
+	}
+	this.paused ? (globalSpeed = 1, this.paused = false) : (globalSpeed = 0, this.paused = true);
 };
 
 // GAME OVER
@@ -423,10 +427,10 @@ UI.gameOver = function() {
 // Place the player object in a variable called player
 var allEnemies = [];
 // TODO: game/level logic to handle player and enemy spawning
-allEnemies.push(Enemy(cols.a, rows.sm, 100, true));
-allEnemies.push(Enemy(cols.e, rows.sb, -75, false));
-allEnemies.push(Enemy(cols.a, rows.st, 75, false));
-allEnemies.push(Enemy(cols.d, rows.st, 75, false));
+allEnemies.push(Enemy(cols.a, rows.sm, 350, true));
+allEnemies.push(Enemy(cols.e, rows.sb, -450, false));
+allEnemies.push(Enemy(cols.a, rows.st, 350, false));
+allEnemies.push(Enemy(cols.d, rows.st, 350, false));
 player = new Player();
 
 
@@ -454,3 +458,8 @@ document.addEventListener('keyup', function(e) {
 });
 // for clickable UI elements
 document.addEventListener("click", UI.handleClicks);
+
+// pause game on loss of focus or stacked up calls will send enemies all over the place
+window.addEventListener('blur', function(){
+    UI.togglePause(true);
+});
