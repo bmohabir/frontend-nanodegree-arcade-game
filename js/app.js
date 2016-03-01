@@ -266,7 +266,7 @@ Player.prototype.render = function() {
 // generates movement values based on player input
 Player.prototype.handleInput = function(key, step, isShifting) {
     // pause when P is pressed
-    if (key === 'p' && step === 'down') {
+    if (key === 'p' && step === 'down' && UI.pauseButton) {
     	UI.togglePause();
     	return;
     }
@@ -324,10 +324,16 @@ var UI = {};
 // calls required update methods for UI elements
 // TODO: more game/level logic
 UI.update = function(dt) {
-	// removes level start message after set amount of time
-	// BUG: should prevent pausing during level start
-	// TODO: use player.speedFactor instead of globalSpeed
-    Game.levelStarted ? (player.speedFactor = 0, (UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false)) : UI.paused ? UI.timer = 100 : (player.speedFactor = 1, UI.timer = 100);
+	// timer for level start event
+    if (Game.levelStarted) {
+        player.speedFactor = 0;
+        this.pauseButton = false;
+        UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false;
+    } else {
+        player.speedFactor = 1;
+        this.pauseButton = true;
+        UI.timer = 100;
+    }
 };
 
 // timer for temporary UI elements (ie. level start)
