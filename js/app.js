@@ -318,7 +318,7 @@ var UI = {};
 // TODO: more game/level logic
 UI.update = function(dt) {
 	// removes level start message after set amount of time
-    Game.levelStarted ? (globalSpeed = 0, (UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false)) : (globalSpeed = 1, UI.timer = 100);
+    Game.levelStarted ? (globalSpeed = 0, (UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false)) : UI.paused ? UI.timer = 100 : (globalSpeed = 1, UI.timer = 100);
 };
 
 // timer for temporary UI elements (ie. level start)
