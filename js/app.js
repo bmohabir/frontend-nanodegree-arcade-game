@@ -1,3 +1,8 @@
+// used by UI.handleClicks method
+var thisCanvas,
+	topBorder,
+	leftBorder;
+
 // x and y coordinates for placing sprites on tiles
 // (for convenience)
 var rows = {
@@ -173,7 +178,7 @@ Player.prototype.calcSpeed = function() {
 Player.prototype.update = function(dt) {
 	// ends game if no more lives
 	if (this.lives<1) {
-		gameOver();
+		UI.gameOver();
 	}
 
     var enemies = allEnemies.length,
@@ -300,7 +305,6 @@ Player.prototype.handleInput = function(key, step) {
 };
 
 // user interface
-// TODO: lots
 var UI = {};
 
 // calls required update methods for UI elements
@@ -310,52 +314,101 @@ UI.update = function() {
 
 // renders UI overlay
 UI.render = function() {
+	this.renderPauseButton();
 	this.renderLives();
 	if (this.paused) {
 		this.renderPaused();
 	}
-	if (this.gameOver) {
+	if (this.isGameOver) {
 		this.renderGO();
 	}
 };
 
 // display remaining lives in UI
 UI.renderLives = function() {
-	var spritePos = 1550,
+	var spritePos = 1120,
 		i;
 
 	for (i=0; i<=player.lives; i++) {
 		if (i) {
 			ctx.save();
-			ctx.scale(0.3, 0.3);
-			ctx.drawImage(Resources.get(player.sprite), spritePos, 150);
+			ctx.scale(0.4, 0.4);
+			ctx.drawImage(Resources.get(player.sprite), spritePos, 125);
 			ctx.restore();
-			spritePos -= 100;
+			spritePos -= 80;
 		}
+	}
+};
+
+// whether or not pause button is applicable
+UI.pauseButton = true;
+
+// draw pause/resume button if applicable
+UI.renderPauseButton = function() {
+	if (this.pauseButton) {
+		ctx.beginPath();
+		ctx.fillStyle = 'red';
+		ctx.arc(46, 90, 22, 0, 2*Math.PI);
+		ctx.fill();
+		ctx.closePath;
+
+		this.paused ? (
+			ctx.lineWidth = 2,
+			ctx.fillStyle = 'white',
+			ctx.beginPath(),
+			ctx.moveTo(37, 80),
+			ctx.lineTo(58, 90),
+			ctx.lineTo(37, 100),
+			ctx.fill(),
+			ctx.closePath()
+		) : (
+			ctx.lineWidth = 2,
+			ctx.font = 'bold 28px Impact',
+			ctx.fillStyle = 'white',
+			ctx.fillText("I I", 45, 100)
+		);
 	}
 };
 
 // draw pause screen
 UI.renderPaused = function() {
+	ctx.lineWidth = 3;
+	ctx.font = 'bold 60px sans-serif';
+	ctx.fillStyle = 'white';
 	ctx.fillText("PAUSED", 505/2, 333);
 	ctx.strokeText("PAUSED", 505/2, 333);
 };
 
 // draw game over screen
 UI.renderGO = function() {
+	ctx.lineWidth = 3;
+	ctx.font = 'bold 60px sans-serif';
+	ctx.fillStyle = 'white';
 	ctx.fillText("GAME OVER", 505/2, 333);
 	ctx.strokeText("GAME OVER", 505/2, 333);
 };
 
+// handles mouse-interactive UI elements
+UI.handleClicks = function(e) {
+	thisCanvas = document.getElementsByTagName("canvas")[0];
+	topBorder = thisCanvas.getBoundingClientRect().top;
+	leftBorder = thisCanvas.getBoundingClientRect().left;
+
+	if (UI.pauseButton && e.clientX - leftBorder > 24 && e.clientX - leftBorder < 68 && e.clientY - topBorder > 68 && e.clientY - topBorder < 112) {
+		UI.togglePause();
+	}
+};
+
 // pause/unpause the game
-var togglePause = function() {
-	UI.paused ? (globalSpeed = 1, UI.paused = false) : (globalSpeed = 0, UI.paused = true);
-}
+UI.togglePause = function() {
+	this.paused ? (globalSpeed = 1, UI.paused = false) : (globalSpeed = 0, UI.paused = true);
+};
 
 // GAME OVER
-var gameOver = function() {
+UI.gameOver = function() {
 	player.sprite = undefined;
-	UI.gameOver = true;
+	this.pauseButton = false;
+	this.isGameOver = true;
 };
 
 
@@ -393,3 +446,5 @@ document.addEventListener('keyup', function(e) {
     player.handleInput(allowedKeys[e.keyCode], 'up');
 });
 
+// for clickable UI elements
+document.addEventListener("click", UI.handleClicks);
