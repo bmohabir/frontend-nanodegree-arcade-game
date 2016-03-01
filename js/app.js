@@ -258,6 +258,7 @@ Player.prototype.render = function() {
 
 // generates movement values based on player input
 Player.prototype.handleInput = function(key, step, slow) {
+    // pause when P is pressed
     if (key === 'p' && step === 'down') {
     	UI.togglePause();
     	return;
@@ -269,48 +270,38 @@ Player.prototype.handleInput = function(key, step, slow) {
     if (step === 'down') {
     	switch (key) {
 	        case 'left':
-	        	//this.yMove = 0;
-	        	//this.xMove = -1;
+	        	// use 'momentum' to avoid key repeat delay messing up
+	        	// player movement
 	        	this.xMove <= 0 ? this.xMove -= 1 : this.xMove = -1;
 	        	break;
 	        case 'up':
-	        	//this.xMove = 0;
-	        	//this.yMove = -1;
 	        	this.yMove <= 0 ? this.yMove -= 1 : this.yMove = -1;
 	            break;
 	        case 'right':
-	        	//this.yMove = 0;
-	        	//this.xMove = 1;
 	        	this.xMove >= 0 ? this.xMove += 1 : this.xMove = 1;
 	            break;
 	        case 'down':
-	        	//this.xMove = 0;
-	            //this.yMove = 1;
-	            this.yMove >= 0 ? this.yMove += 1 : this.xMove = 1;
+	        	this.yMove >= 0 ? this.yMove += 1 : this.xMove = 1;
 	            break;
 	    }
     } else {
     	switch (key) {
 	        case 'left':
-	        	//this.xMove = 0;
 	        	if (this.xMove < 0) {
 	        		this.xMove = 0;
 	        	}
 	            break;
 	        case 'up':
-	        	//this.yMove = 0;
 	        	if (this.yMove < 0) {
 	        		this.yMove = 0;
 	        	}
 	        	break;
 	        case 'right':
-	        	//this.xMove = 0;
 	        	if (this.xMove > 0) {
 	        		this.xMove = 0;
 	        	}
 	        	break;
 	        case 'down':
-	        	//this.yMove = 0;
 	        	if (this.yMove > 0) {
 	        		this.yMove = 0;
 	        	}
