@@ -316,12 +316,8 @@ UI.update = function() {
 UI.render = function() {
 	this.renderPauseButton();
 	this.renderLives();
-	if (this.paused) {
-		this.renderPaused();
-	}
-	if (this.isGameOver) {
-		this.renderGO();
-	}
+	this.renderPaused();
+	this.renderGO();
 };
 
 // display remaining lives in UI
@@ -343,7 +339,7 @@ UI.renderLives = function() {
 // whether or not pause button is applicable
 UI.pauseButton = true;
 
-// draw pause/resume button if applicable
+// draw pause/resume button
 UI.renderPauseButton = function() {
 	if (this.pauseButton) {
 		ctx.beginPath();
@@ -372,20 +368,24 @@ UI.renderPauseButton = function() {
 
 // draw pause screen
 UI.renderPaused = function() {
-	ctx.lineWidth = 3;
-	ctx.font = 'bold 60px sans-serif';
-	ctx.fillStyle = 'white';
-	ctx.fillText("PAUSED", 505/2, 333);
-	ctx.strokeText("PAUSED", 505/2, 333);
+	if (this.paused) {
+		ctx.lineWidth = 3;
+		ctx.font = 'bold 60px sans-serif';
+		ctx.fillStyle = 'white';
+		ctx.fillText("PAUSED", 505/2, 333);
+		ctx.strokeText("PAUSED", 505/2, 333);
+	}
 };
 
 // draw game over screen
 UI.renderGO = function() {
-	ctx.lineWidth = 3;
-	ctx.font = 'bold 60px sans-serif';
-	ctx.fillStyle = 'white';
-	ctx.fillText("GAME OVER", 505/2, 333);
-	ctx.strokeText("GAME OVER", 505/2, 333);
+	if (this.isGameOver) {
+		ctx.lineWidth = 3;
+		ctx.font = 'bold 60px sans-serif';
+		ctx.fillStyle = 'white';
+		ctx.fillText("GAME OVER", 505/2, 333);
+		ctx.strokeText("GAME OVER", 505/2, 333);
+	}
 };
 
 // handles mouse-interactive UI elements
