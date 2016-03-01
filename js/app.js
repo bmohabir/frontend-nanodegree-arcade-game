@@ -318,6 +318,8 @@ var UI = {};
 // TODO: more game/level logic
 UI.update = function(dt) {
 	// removes level start message after set amount of time
+	// BUG: should prevent pausing during level start
+	// TODO: use player.speedFactor instead of globalSpeed
     Game.levelStarted ? (globalSpeed = 0, (UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false)) : UI.paused ? UI.timer = 100 : (globalSpeed = 1, UI.timer = 100);
 };
 
