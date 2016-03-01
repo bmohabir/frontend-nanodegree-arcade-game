@@ -184,7 +184,7 @@ Player.prototype.calcSpeed = function() {
 Player.prototype.update = function(dt) {
 	// ends game if no more lives
 	if (this.lives<1) {
-		UI.gameOver();
+		Game.gameOver();
 	}
 
     var enemies = allEnemies.length,
@@ -239,7 +239,6 @@ Player.prototype.respawn = function() {
 };
 
 // handles player death from enemy contact
-// TODO: more game/ui logic
 Player.prototype.touchEnemy = function() {
     this.lives--;
     if (this.lives) {
@@ -248,9 +247,8 @@ Player.prototype.touchEnemy = function() {
 };
 
 // handles level complete
-// TODO: more game/ui logic
 Player.prototype.win = function() {
-    /* levelComplete(); */
+    /* Game.levelComplete(); */
     allEnemies.length = 0;
     this.respawn();
 };
@@ -329,7 +327,7 @@ UI.update = function(dt) {
         player.speedFactor = 0;
         this.pauseButton = false;
         UI.timer > 0 ? UI.timer -= 1.5 * dt : Game.levelStarted = false;
-    } else if (!this.isGameOver) {
+    } else if (!Game.isGameOver) {
         player.speedFactor = 1;
         this.pauseButton = true;
         UI.timer = 100;
@@ -375,8 +373,7 @@ UI.renderPauseButton = function() {
 		ctx.arc(46, 90, 22, 0, 2*Math.PI);
 		ctx.fill();
 		ctx.closePath;
-
-		this.paused ? (
+		Game.paused ? (
 			ctx.lineWidth = 2,
 			ctx.fillStyle = 'white',
 			ctx.beginPath(),
@@ -401,7 +398,6 @@ UI.renderLevel = function(level) {
         ctx.font = 'bold 60px sans-serif';
         ctx.globalAlpha = UI.timer > 1.0 ? 1.0 : UI.timer + 0.1;
         ctx.fillStyle = 'white';
-        //console.log(Math.round(12.75*UI.timer));
         ctx.fillText('Level ' + level, 505/2, 333);
         ctx.strokeText('Level ' + level, 505/2, 333);
         ctx.globalAlpha = 1.0;
@@ -410,7 +406,7 @@ UI.renderLevel = function(level) {
 
 // draw pause screen
 UI.renderPaused = function() {
-	if (this.paused) {
+	if (Game.paused) {
 		ctx.lineWidth = 3;
 		ctx.font = 'bold 60px sans-serif';
 		ctx.fillStyle = 'white';
@@ -421,7 +417,7 @@ UI.renderPaused = function() {
 
 // draw game over screen
 UI.renderGO = function() {
-	if (this.isGameOver) {
+	if (Game.isGameOver) {
 		ctx.lineWidth = 3;
 		ctx.font = 'bold 60px sans-serif';
 		ctx.fillStyle = 'white';
@@ -437,26 +433,9 @@ UI.handleClicks = function(e) {
 	leftBorder = thisCanvas.getBoundingClientRect().left;
 
 	if (UI.pauseButton && e.clientX - leftBorder > 24 && e.clientX - leftBorder < 68 && e.clientY - topBorder > 68 && e.clientY - topBorder < 112) {
-		UI.togglePause();
+		Game.togglePause();
 	}
 };
-
-// pause/unpause the game
-UI.togglePause = function(force) {
-	force = force || false;
-	if (force) {
-		this.paused = false;
-	}
-	this.paused ? (globalSpeed = 1, this.paused = false) : (globalSpeed = 0, this.paused = true);
-};
-
-// GAME OVER
-UI.gameOver = function() {
-	player.sprite = undefined;
-	this.pauseButton = false;
-	this.isGameOver = true;
-};
-
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
@@ -481,6 +460,22 @@ Game.levels = {
     1: [
         Enemy(cols.a, rows.sm, 350, true), Enemy(cols.e, rows.sb, -450, false), Enemy(cols.a, rows.st, 350, false), Enemy(cols.d, rows.st, 350, false)
     ]
+};
+
+// pause/unpause the game
+Game.togglePause = function(force) {
+    force = force || false;
+    if (force) {
+        this.paused = false;
+    }
+    this.paused ? (globalSpeed = 1, this.paused = false) : (globalSpeed = 0, this.paused = true);
+};
+
+// GAME OVER
+Game.gameOver = function() {
+    player.sprite = undefined;
+    UI.pauseButton = false;
+    this.isGameOver = true;
 };
 
 // spawn level entities
@@ -526,7 +521,7 @@ document.addEventListener("click", UI.handleClicks);
 // pause game on loss of focus or stacked up calls will send enemies all over the place
 window.addEventListener('blur', function(){
 	// no pausing on game over screen
-    if (!UI.isGameOver) {
-    	UI.togglePause(true);
+    if (!Game.isGameOver) {
+    	Game.togglePause(true);
     }
 });
