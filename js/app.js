@@ -131,10 +131,9 @@ var Player = function() {
     this.x = this.startPos.x;
     this.y = this.startPos.y;
     this.sprite = this.getSprite();
-    this.lives = 3;
-    // used for smooth movement
-    this.xCounter = 0;
-    this.yCounter = 0;
+    this.lives = 4;
+    this.xMove = 0;
+    this.yMove = 0;
 };
 
 // starting position preset
@@ -162,8 +161,8 @@ Player.prototype.getSprite = function(aSprite) {
 
 // horizontal and vertical movement speed
 Player.prototype.speed = {
-	'x': 300,
-	'y': 350
+	'x': 350,
+	'y': 400
 };
 
 // player speed multipler
@@ -187,20 +186,16 @@ Player.prototype.update = function(dt) {
         i;
 
     // smooth movement animation
-    if (this.xCounter > 0) {
+    if (this.xMove > 0) {
     	this.x += xSpeed * dt;
-    	this.xCounter--;
-    } else if (this.xCounter < 0) {
+    } else if (this.xMove < 0) {
     	this.x -= xSpeed * dt;
-    	this.xCounter++;
     }
 
-    if (this.yCounter > 0) {
+    if (this.yMove > 0) {
     	this.y += ySpeed * dt;
-    	this.yCounter--;
-    } else if (this.yCounter < 0) {
+    } else if (this.yMove < 0) {
     	this.y -= ySpeed * dt;
-    	this.yCounter++;
     }
 
     // keep player in bounds
@@ -232,6 +227,8 @@ Player.prototype.update = function(dt) {
 Player.prototype.respawn = function() {
     this.x = this.startPos.x;
     this.y = this.startPos.y;
+    this.xMove = 0;
+    this.yMove = 0;
 };
 
 // handles player death from enemy contact
@@ -260,56 +257,66 @@ Player.prototype.render = function() {
 };
 
 // generates movement values based on player input
-Player.prototype.handleInput = function(key, step) {
+Player.prototype.handleInput = function(key, step, slow) {
+    if (key === 'p' && step === 'down') {
+    	UI.togglePause();
+    	return;
+    }
+
+    // slows player movement when shift is held
+    this.speedFactor = slow ? 0.5 : 1;
+
     if (step === 'down') {
     	switch (key) {
 	        case 'left':
-	        	// prevent diagonal drift
-	        	this.yCounter = 0;
-	        	// immediately cancel movement in opposite direction,
-	        	// otherwise continue movement (counter value set to avoid key
-	        	// repeat delay)
-	        	this.xCounter <= 0 ? this.xCounter -= 34 : this.xCounter = -34;
+	        	//this.yMove = 0;
+	        	//this.xMove = -1;
+	        	this.xMove <= 0 ? this.xMove -= 1 : this.xMove = -1;
 	        	break;
 	        case 'up':
-	        	this.xCounter = 0;
-	        	this.yCounter <= 0 ? this.yCounter -= 34 : this.yCounter = -34;
+	        	//this.xMove = 0;
+	        	//this.yMove = -1;
+	        	this.yMove <= 0 ? this.yMove -= 1 : this.yMove = -1;
 	            break;
 	        case 'right':
-	        	this.yCounter = 0;
-	        	this.xCounter >= 0 ? this.xCounter += 34 : this.xCounter = 34;
+	        	//this.yMove = 0;
+	        	//this.xMove = 1;
+	        	this.xMove >= 0 ? this.xMove += 1 : this.xMove = 1;
 	            break;
 	        case 'down':
-	        	this.xCounter = 0;
-	            this.yCounter >= 0 ? this.yCounter += 34 : this.yCounter = 34;
+	        	//this.xMove = 0;
+	            //this.yMove = 1;
+	            this.yMove >= 0 ? this.yMove += 1 : this.xMove = 1;
 	            break;
 	    }
     } else {
     	switch (key) {
 	        case 'left':
-	        	// stop moving on keyup to prevent drifting
-	        	if (this.xCounter < 0) {
-	        		this.xCounter = 0;
+	        	//this.xMove = 0;
+	        	if (this.xMove < 0) {
+	        		this.xMove = 0;
 	        	}
 	            break;
 	        case 'up':
-	        	if (this.yCounter < 0) {
-	        		this.yCounter = 0;
+	        	//this.yMove = 0;
+	        	if (this.yMove < 0) {
+	        		this.yMove = 0;
 	        	}
 	        	break;
 	        case 'right':
-	        	if (this.xCounter > 0) {
-	        		this.xCounter = 0;
+	        	//this.xMove = 0;
+	        	if (this.xMove > 0) {
+	        		this.xMove = 0;
 	        	}
 	        	break;
 	        case 'down':
-	        	if (this.yCounter > 0) {
-	        		this.yCounter = 0;
+	        	//this.yMove = 0;
+	        	if (this.yMove > 0) {
+	        		this.yMove = 0;
 	        	}
 	        	break;
 	    }
     }
-
 };
 
 // user interface
@@ -333,7 +340,7 @@ UI.renderLives = function() {
 	var spritePos = 1120,
 		i;
 
-	for (i=0; i<=player.lives; i++) {
+	for (i=0; i<player.lives; i++) {
 		if (i) {
 			ctx.save();
 			ctx.scale(0.4, 0.4);
@@ -425,10 +432,10 @@ UI.gameOver = function() {
 // Place the player object in a variable called player
 var allEnemies = [];
 // TODO: game/level logic to handle player and enemy spawning
-allEnemies.push(Enemy(cols.a, rows.sm, 150, true));
-allEnemies.push(Enemy(cols.e, rows.sb, -100, false));
-allEnemies.push(Enemy(cols.a, rows.st, 100, false));
-allEnemies.push(Enemy(cols.d, rows.st, 100, false));
+allEnemies.push(Enemy(cols.a, rows.sm, 100, true));
+allEnemies.push(Enemy(cols.e, rows.sb, -75, false));
+allEnemies.push(Enemy(cols.a, rows.st, 75, false));
+allEnemies.push(Enemy(cols.d, rows.st, 75, false));
 player = new Player();
 
 
@@ -443,16 +450,16 @@ var allowedKeys = {
         65: 'left',
         87: 'up',
         68: 'right',
-        83: 'down'
+        83: 'down',
+        80: 'p'
 };
 // use keydown for fast response and hold
 document.addEventListener('keydown', function(e) {
-    player.handleInput(allowedKeys[e.keyCode], 'down');
+	e.shiftKey ? player.handleInput(allowedKeys[e.keyCode], 'down', true) : player.handleInput(allowedKeys[e.keyCode], 'down', false);
 });
 // use keyup to stop movement
 document.addEventListener('keyup', function(e) {
-    player.handleInput(allowedKeys[e.keyCode], 'up');
+    e.shiftKey ? player.handleInput(allowedKeys[e.keyCode], 'up', true) : player.handleInput(allowedKeys[e.keyCode], 'up', false);
 });
-
 // for clickable UI elements
 document.addEventListener("click", UI.handleClicks);
