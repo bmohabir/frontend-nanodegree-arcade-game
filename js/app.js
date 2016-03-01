@@ -329,7 +329,7 @@ UI.update = function(dt) {
         player.speedFactor = 0;
         this.pauseButton = false;
         UI.timer > 0 ? UI.timer -= 1.5 * dt : Game.levelStarted = false;
-    } else {
+    } else if (!this.isGameOver) {
         player.speedFactor = 1;
         this.pauseButton = true;
         UI.timer = 100;
