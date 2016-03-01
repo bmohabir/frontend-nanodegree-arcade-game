@@ -361,7 +361,7 @@ UI.renderPauseButton = function() {
 			ctx.lineWidth = 2,
 			ctx.font = 'bold 28px Impact',
 			ctx.fillStyle = 'white',
-			ctx.fillText("I I", 45, 100)
+			ctx.fillText("I I", 45, 102)
 		);
 	}
 };
