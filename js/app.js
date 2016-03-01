@@ -168,9 +168,16 @@ Player.prototype.speed = {
 // player speed multipler
 Player.prototype.speedFactor = 1;
 
+// stores shift key state
+Player.prototype.isShifting = false;
+
 // calculate player movement speed
 Player.prototype.calcSpeed = function() {
-	return {'x': this.speed.x * this.speedFactor * globalSpeed, 'y': this.speed.y * this.speedFactor * globalSpeed};
+    if (this.isShifting) {
+        return {'x': this.speed.x * (this.speedFactor/2) * globalSpeed, 'y': this.speed.y * (this.speedFactor/2) * globalSpeed};
+    } else {
+        return {'x': this.speed.x * this.speedFactor * globalSpeed, 'y': this.speed.y * this.speedFactor * globalSpeed};
+    }
 };
 
 // updates player's position
@@ -257,7 +264,7 @@ Player.prototype.render = function() {
 };
 
 // generates movement values based on player input
-Player.prototype.handleInput = function(key, step, slow) {
+Player.prototype.handleInput = function(key, step, isShifting) {
     // pause when P is pressed
     if (key === 'p' && step === 'down') {
     	UI.togglePause();
@@ -266,7 +273,7 @@ Player.prototype.handleInput = function(key, step, slow) {
 
     // slows player movement when shift is held
     // BUG: this code constantly resets player speed factor, needs fixing
-    this.speedFactor = slow ? 0.5 : 1;
+    this.isShifting = isShifting;
 
     if (step === 'down') {
     	switch (key) {
@@ -320,7 +327,7 @@ UI.update = function(dt) {
 	// removes level start message after set amount of time
 	// BUG: should prevent pausing during level start
 	// TODO: use player.speedFactor instead of globalSpeed
-    Game.levelStarted ? (globalSpeed = 0, (UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false)) : UI.paused ? UI.timer = 100 : (globalSpeed = 1, UI.timer = 100);
+    Game.levelStarted ? (player.speedFactor = 0, (UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false)) : UI.paused ? UI.timer = 100 : (player.speedFactor = 1, UI.timer = 100);
 };
 
 // timer for temporary UI elements (ie. level start)
