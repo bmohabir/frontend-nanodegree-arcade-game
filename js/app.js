@@ -328,7 +328,7 @@ UI.update = function(dt) {
     if (Game.levelStarted) {
         player.speedFactor = 0;
         this.pauseButton = false;
-        UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false;
+        UI.timer > 0 ? UI.timer -= 1.5 * dt : Game.levelStarted = false;
     } else {
         player.speedFactor = 1;
         this.pauseButton = true;
@@ -337,7 +337,7 @@ UI.update = function(dt) {
 };
 
 // timer for temporary UI elements (ie. level start)
-UI.timer = 20;
+UI.timer = 3.0;
 
 // renders UI overlay
 UI.render = function() {
@@ -399,9 +399,12 @@ UI.renderLevel = function(level) {
     if (Game.levelStarted) {
         ctx.lineWidth = 3;
         ctx.font = 'bold 60px sans-serif';
+        ctx.globalAlpha = UI.timer > 1.0 ? 1.0 : UI.timer + 0.1;
         ctx.fillStyle = 'white';
-        ctx.fillText("Level " + level, 505/2, 333);
-        ctx.strokeText("Level " + level, 505/2, 333);
+        //console.log(Math.round(12.75*UI.timer));
+        ctx.fillText('Level ' + level, 505/2, 333);
+        ctx.strokeText('Level ' + level, 505/2, 333);
+        ctx.globalAlpha = 1.0;
     }
 };
 
@@ -411,8 +414,8 @@ UI.renderPaused = function() {
 		ctx.lineWidth = 3;
 		ctx.font = 'bold 60px sans-serif';
 		ctx.fillStyle = 'white';
-		ctx.fillText("PAUSED", 505/2, 333);
-		ctx.strokeText("PAUSED", 505/2, 333);
+		ctx.fillText('PAUSED', 505/2, 333);
+		ctx.strokeText('PAUSED', 505/2, 333);
 	}
 };
 
@@ -422,14 +425,14 @@ UI.renderGO = function() {
 		ctx.lineWidth = 3;
 		ctx.font = 'bold 60px sans-serif';
 		ctx.fillStyle = 'white';
-		ctx.fillText("GAME OVER", 505/2, 333);
-		ctx.strokeText("GAME OVER", 505/2, 333);
+		ctx.fillText('GAME OVER', 505/2, 333);
+		ctx.strokeText('GAME OVER', 505/2, 333);
 	}
 };
 
 // handles mouse-interactive UI elements
 UI.handleClicks = function(e) {
-	thisCanvas = document.getElementsByTagName("canvas")[0];
+	thisCanvas = document.getElementsByTagName('canvas')[0];
 	topBorder = thisCanvas.getBoundingClientRect().top;
 	leftBorder = thisCanvas.getBoundingClientRect().left;
 
