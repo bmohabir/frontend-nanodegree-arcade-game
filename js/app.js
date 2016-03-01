@@ -6,7 +6,7 @@ var thisCanvas,
 // x and y coordinates for placing sprites on tiles
 // (for convenience)
 var rows = {
-    'w': -8,
+    'w': -6,
     'st': 62,
     'sm': 145,
     'sb': 228,
