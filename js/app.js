@@ -314,13 +314,19 @@ Player.prototype.handleInput = function(key, step, slow) {
 var UI = {};
 
 // calls required update methods for UI elements
-UI.update = function() {
-	// TODO (not needed yet)
+// TODO: more game/level logic
+UI.update = function(dt) {
+	// removes level start message after set amount of time
+    Game.levelStarted ? UI.timer > 0 ? UI.timer -= 10 * dt : Game.levelStarted = false : UI.timer = 100;
 };
+
+// timer for temporary UI elements (ie. level start)
+UI.timer = 20;
 
 // renders UI overlay
 UI.render = function() {
 	this.renderPauseButton();
+    this.renderLevel(Game.level);
 	this.renderLives();
 	this.renderPaused();
 	this.renderGO();
@@ -370,6 +376,17 @@ UI.renderPauseButton = function() {
 			ctx.fillText("I I", 45, 102)
 		);
 	}
+};
+
+// draws level start
+UI.renderLevel = function(level) {
+    if (Game.levelStarted) {
+        ctx.lineWidth = 3;
+        ctx.font = 'bold 60px sans-serif';
+        ctx.fillStyle = 'white';
+        ctx.fillText("Level " + level, 505/2, 333);
+        ctx.strokeText("Level " + level, 505/2, 333);
+    }
 };
 
 // draw pause screen
@@ -426,13 +443,41 @@ UI.gameOver = function() {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var allEnemies = [];
-// TODO: game/level logic to handle player and enemy spawning
-allEnemies.push(Enemy(cols.a, rows.sm, 350, true));
-allEnemies.push(Enemy(cols.e, rows.sb, -450, false));
-allEnemies.push(Enemy(cols.a, rows.st, 350, false));
-allEnemies.push(Enemy(cols.d, rows.st, 350, false));
-player = new Player();
+// object for gameplay/level logic
+var Game = {};
+// method for starting the game
+Game.play = function() {
+    player = new Player();
+    this.playLevel(this.level);
+};
 
+// start at level 1
+Game.level = 1;
+
+// used for level starting effects
+Game.levelStarted = true;
+
+// object containing levels (enemies and powerups)
+Game.levels = {
+    1: [
+        Enemy(cols.a, rows.sm, 350, true), Enemy(cols.e, rows.sb, -450, false), Enemy(cols.a, rows.st, 350, false), Enemy(cols.d, rows.st, 350, false)
+    ]
+};
+
+// spawn level entities
+Game.playLevel = function(level) {
+    this.levels[level].forEach(function(entity) {
+        if (entity instanceof Enemy) {
+            allEnemies.push(entity);
+        }
+    });
+    Game.levelStarted = true;
+};
+
+// TODO: levelComplete, powerups, character select
+
+// start playing
+Game.play();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
