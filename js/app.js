@@ -214,6 +214,8 @@ Player.prototype.update = function(dt) {
     if (this.y > 404)
 	{
 		this.y = 404;
+	} else if (this.y < -11) {
+		this.y = -11;
 	}
 
     // check for enemy touch/graze
@@ -258,7 +260,7 @@ Player.prototype.win = function() {
         dt;
 
     Game.levelStopTime = Date.now();
-    dt = Game.levelStopTime - Game.levelStartTime;
+    dt = Game.levelStopTime - Game.levelStartTime - Game.totalPauseTime;
 
     // bonus points for fast level completion
     if (dt <= 3000) {
@@ -348,7 +350,7 @@ UI.update = function(dt) {
 	// timers for level start and complete events
     if (Game.levelStarted) {
         this.pauseButton = false;
-        UI.timer > 0 ? UI.timer -= 1.5 * dt : (Game.levelStarted = false, UI.timer = 3.0, Game.levelStartTime = Date.now());
+        UI.timer > 0 ? UI.timer -= 1.5 * dt : (Game.levelStarted = false, UI.timer = 3.0, Game.totalPauseTime = 0, Game.levelStartTime = Date.now());
     } else if (player.inTheWater) {
         this.pauseButton = false;
         UI.timer > 0 ? UI.timer -= 1.5 * dt : (player.inTheWater = false, UI.timer = 3.0);
@@ -519,7 +521,7 @@ Game.togglePause = function(force) {
     if (force) {
         this.paused = false;
     }
-    this.paused ? (globalSpeed = 1, this.paused = false) : (globalSpeed = 0, this.paused = true);
+    this.paused ? (globalSpeed = 1, this.paused = false, this.totalPauseTime = (Date.now() - this.pauseStartTime)) : (globalSpeed = 0, this.paused = true, this.pauseStartTime = Date.now());
 };
 
 // GAME OVER
