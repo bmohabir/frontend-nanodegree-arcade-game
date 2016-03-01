@@ -288,17 +288,25 @@ Player.prototype.handleInput = function(key, step) {
     	switch (key) {
 	        case 'left':
 	        	// stop moving on keyup to prevent drifting
-	        	this.xCounter = 0;
+	        	if (this.xCounter < 0) {
+	        		this.xCounter = 0;
+	        	}
 	            break;
 	        case 'up':
-	        	this.yCounter = 0;
-	            break;
+	        	if (this.yCounter < 0) {
+	        		this.yCounter = 0;
+	        	}
+	        	break;
 	        case 'right':
-	        	this.xCounter = 0;
-	            break;
+	        	if (this.xCounter > 0) {
+	        		this.xCounter = 0;
+	        	}
+	        	break;
 	        case 'down':
-	        	this.yCounter = 0;
-	            break;
+	        	if (this.yCounter > 0) {
+	        		this.yCounter = 0;
+	        	}
+	        	break;
 	    }
     }
 
