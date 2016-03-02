@@ -273,13 +273,15 @@ Player.prototype.win = function() {
     completeTime = Game.levelStopTime - Game.levelStartTime - Game.totalPauseTime;
 
     // bonus points for fast level completion
-    if (completeTime <= 2500) {
-        this.score += level * 600;
-    } else if (completeTime <= 5000) {
+    if (completeTime <= 1500) {
+        this.score += level * 800;
+    } else if (completeTime <= 2000) {
+        this.score += level * 500;
+    } else if (completeTime <= 3000) {
         this.score += level * 400;
-    } else if (completeTime <= 10000) {
+    } else if (completeTime <= 5000) {
         this.score += level * 200;
-    } else if (completeTime <= 15000) {
+    } else if (completeTime <= 10000) {
         this.score += level * 100;
     }
     this.score += level * 100;
