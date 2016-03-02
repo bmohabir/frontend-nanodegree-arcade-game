@@ -239,7 +239,7 @@ Player.prototype.update = function(dt) {
     for (i=0; i < numEnemies; i++) {
         if (((allEnemies[i].y > this.y && allEnemies[i].y - this.y <= 58) || (this.y > allEnemies[i].y && this.y - allEnemies[i].y <= 74)) && Math.abs(allEnemies[i].x - this.x) < 69) {
             this.touchEnemy();
-        } else if (((allEnemies[i].y > this.y && allEnemies[i].y - this.y <= 62) || (this.y > allEnemies[i].y && this.y - allEnemies[i].y <= 79)) && Math.abs(allEnemies[i].x - this.x) < 75) {
+        } else if (this.y < 303 && ((allEnemies[i].y > this.y && allEnemies[i].y - this.y <= 62) || (this.y > allEnemies[i].y && this.y - allEnemies[i].y <= 79)) && Math.abs(allEnemies[i].x - this.x) < 75) {
             // player gains points for grazing enemy sprites
             this.score += Math.round(35 * dt);
         }
