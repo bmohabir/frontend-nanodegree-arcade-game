@@ -75,8 +75,8 @@ Enemy.prototype.sprites = {
 // speed multiplier for enemies
 Enemy.prototype.speedFactor = 1;
 
-// calculates enemy speed
-Enemy.prototype.calcSpeed = function() {
+// returns calculated enemy speed
+Enemy.prototype.getSpeed = function() {
 	return (globalSpeed * this.speedFactor * this.speed);
 };
 
@@ -100,7 +100,7 @@ Enemy.prototype.update = function (dt) {
         i;
 
     // move enemy to new position
-    this.x += this.calcSpeed() * dt;
+    this.x += this.getSpeed() * dt;
 
     // check level boundary for wrap-around/collision
     if (this.onPatrol) {
@@ -191,8 +191,8 @@ Player.prototype.speed = {
 // player speed multipler
 Player.prototype.speedFactor = 1;
 
-// calculate player movement speed
-Player.prototype.calcSpeed = function() {
+// returns calculatd player speed
+Player.prototype.getSpeed = function() {
     if (this.isShifting) {
         return {'x': this.speed.x * (this.speedFactor/2) * globalSpeed, 'y': this.speed.y * (this.speedFactor/2) * globalSpeed};
     } else {
@@ -203,8 +203,8 @@ Player.prototype.calcSpeed = function() {
 // updates player's position and checks for win/death conditions
 Player.prototype.update = function(dt) {
     var numEnemies = allEnemies.length,
-    	xSpeed = this.calcSpeed().x,
-    	ySpeed = this.calcSpeed().y,
+    	xSpeed = this.getSpeed().x,
+    	ySpeed = this.getSpeed().y,
         i;
 
     // smooth movement animation
@@ -264,7 +264,7 @@ Player.prototype.touchEnemy = function() {
     this.lives ? this.respawn() : Game.gameOver();
 };
 
-// calculates win score and triggers level complete
+// adds up score and triggers level complete
 Player.prototype.win = function() {
     var level = Game.level,
         completeTime;
@@ -307,7 +307,7 @@ Player.prototype.handleInput = function(key, step, isShifting) {
 
     /* TODO: spacebar for game start/next level */
 
-    // calcSpeed will slow movement when shift is held
+    // getSpeed will slow movement when isShifting is true
     this.isShifting = isShifting;
 
     if (step === 'down') {
