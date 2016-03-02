@@ -372,7 +372,12 @@ UI.update = function(dt) {
     // timers for level start and complete events, including reset pause timer
     if (Game.levelStarted) {
         this.pauseButton = false;
-        UI.timer > 0 ? UI.timer -= 1.5 * dt : (Game.levelStarted = false, UI.timer = 3.0, Game.totalPauseTime = 0, Game.levelStartTime = Date.now());
+        UI.timer > 0 ? UI.timer -= 1.5 * dt : (
+            Game.levelStarted = false,
+            UI.timer = 3.0,
+            Game.totalPauseTime = 0,
+            Game.levelStartTime = Date.now()
+        );
     } else if (player.won) {
         this.pauseButton = false;
         UI.timer > 0 ? UI.timer -= 1.5 * dt : (player.won = false, UI.timer = 3.0);
@@ -530,7 +535,8 @@ Game.levels = {
         Enemy(cols.a, rows.sm, 100, false), Enemy(cols.d, rows.sb, 100, false), Enemy(cols.c, rows.st, 100, false)
     ],
     2: [
-        Enemy(cols.a, rows.sm, 250, true), Enemy(cols.e, rows.sb, -350, false), Enemy(cols.a, rows.st, 250, false), Enemy(cols.d, rows.st, 250, false)
+        Enemy(cols.a, rows.sm, 250, true), Enemy(cols.e, rows.sb, -350, false), Enemy(cols.a, rows.st, 250, false),
+        Enemy(cols.d, rows.st, 250, false)
     ]
 };
 
@@ -552,7 +558,15 @@ Game.togglePause = function(force) {
     if (force) {
         this.paused = false;
     }
-    this.paused ? (globalSpeed = 1, this.paused = false, this.totalPauseTime = (Date.now() - this.pauseStartTime)) : (globalSpeed = 0, this.paused = true, this.pauseStartTime = Date.now());
+    this.paused ? (
+        globalSpeed = 1,
+        this.paused = false,
+        this.totalPauseTime = Date.now() - this.pauseStartTime
+    ) : (
+        globalSpeed = 0,
+        this.paused = true,
+        this.pauseStartTime = Date.now()
+    );
 };
 
 // GAME OVER
