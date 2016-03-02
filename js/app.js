@@ -386,31 +386,25 @@ UI.render = function() {
 	if (this.pauseButton) {
 		this.renderPauseButton();
 	}
-
 	if (Game.levelStarted) {
 		this.renderLevel(Game.level);
 	}
-
     if (player.sprite && !player.won) {
     	this.renderLives();
     }
-
     if (Game.paused) {
     	this.renderPaused();
     }
-
 	if (player.won) {
 		this.renderLevelComplete();
 	}
-
 	if (Game.isGameOver) {
 		this.renderGO();
 	}
-
     this.renderScore();
 };
 
-// display remaining lives in UI
+// display remaining lives
 UI.renderLives = function() {
     var spritePos = 1120,
 		i;
