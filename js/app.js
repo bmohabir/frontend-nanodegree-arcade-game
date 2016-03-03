@@ -532,7 +532,8 @@ ui.handleClicks = function(e) {
     leftBorder = thisCanvas.getBoundingClientRect().left;
 
     // clickable pause button
-    if (ui.pauseButton && e.clientX - leftBorder > 24 && e.clientX - leftBorder < 68 && e.clientY - topBorder > 68 && e.clientY - topBorder < 112) {
+    if (ui.pauseButton && e.clientX - leftBorder > 24 && e.clientX - leftBorder < 68 &&
+        e.clientY - topBorder > 68 && e.clientY - topBorder < 112) {
         game.togglePause();
     }
 
@@ -561,11 +562,12 @@ game.play = function() {
 // each level is an array containing enemy and powerup objects to spawn and their parameters
 game.levels = {
     1: [
-        Enemy(cols.a, rows.sm, 100, false), Enemy(cols.d, rows.sb, 100, false), Enemy(cols.c, rows.st, 100, false)
+        Enemy(cols.a, rows.sm, 100, false), Enemy(cols.d, rows.sb, 100, false),
+        Enemy(cols.c, rows.st, 100, false)
     ],
     2: [
-        Enemy(cols.a, rows.sm, 250, true), Enemy(cols.e, rows.sb, -350, false), Enemy(cols.a, rows.st, 250, false),
-        Enemy(cols.d, rows.st, 250, false)
+        Enemy(cols.a, rows.sm, 250, true), Enemy(cols.e, rows.sb, -350, false),
+        Enemy(cols.a, rows.st, 250, false), Enemy(cols.d, rows.st, 250, false)
     ]
 };
 
@@ -576,7 +578,8 @@ game.update = function() {
     if ((!player.won) && allEnemies.length === 0) {
         var nextLevel = this.level + 1;
         // load next level, or end the game if there isn't one
-        this.levels[nextLevel] instanceof Array ? (player.respawn(), this.playLevel(nextLevel)) : this.gameOver();
+        this.levels[nextLevel] instanceof Array ? (player.respawn(), this.playLevel(nextLevel)) :
+            this.gameOver();
     }
 };
 
@@ -655,12 +658,14 @@ var allowedKeys = {
 
 // use keydown for faster response and hold
 document.addEventListener('keydown', function(e) {
-    e.shiftKey ? player.handleInput(allowedKeys[e.keyCode], 'down', true) : player.handleInput(allowedKeys[e.keyCode], 'down', false);
+    e.shiftKey ? player.handleInput(allowedKeys[e.keyCode], 'down', true) :
+        player.handleInput(allowedKeys[e.keyCode], 'down', false);
 });
 
 // use keyup to stop movement
 document.addEventListener('keyup', function(e) {
-    e.shiftKey ? player.handleInput(allowedKeys[e.keyCode], 'up', true) : player.handleInput(allowedKeys[e.keyCode], 'up', false);
+    e.shiftKey ? player.handleInput(allowedKeys[e.keyCode], 'up', true) :
+        player.handleInput(allowedKeys[e.keyCode], 'up', false);
 });
 
 // for clickable UI elements
