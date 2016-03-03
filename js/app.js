@@ -8,7 +8,7 @@
 
 /* global vars */
 
-// used by UI.handleClicks method
+// used by ui.handleClicks method
 var thisCanvas,
     topBorder,
     leftBorder;
@@ -137,7 +137,8 @@ Enemy.prototype.update = function (dt) {
 
 // check collision between enemies
 Enemy.prototype.checkCollide = function (enemyOne, enemyTwo) {
-    return (enemyOne !== enemyTwo && enemyOne.y === enemyTwo.y && Math.abs(enemyOne.x - enemyTwo.x) <= 93);
+    return (enemyOne !== enemyTwo && enemyOne.y === enemyTwo.y &&
+        Math.abs(enemyOne.x - enemyTwo.x) <= 93);
 };
 
 // Draw the enemy on the screen, required method for game
@@ -205,9 +206,15 @@ Player.prototype.speedFactor = 1;
 Player.prototype.getSpeed = function() {
     var speed;
     if (this.isShifting) {
-        return {'x': this.speed.x * (this.speedFactor/2) * globalSpeed, 'y': this.speed.y * (this.speedFactor/2) * globalSpeed};
+        return {
+            'x': this.speed.x * (this.speedFactor/2) * globalSpeed,
+            'y': this.speed.y * (this.speedFactor/2) * globalSpeed
+        };
     } else {
-        return {'x': this.speed.x * this.speedFactor * globalSpeed, 'y': this.speed.y * this.speedFactor * globalSpeed};
+        return {
+            'x': this.speed.x * this.speedFactor * globalSpeed,
+            'y': this.speed.y * this.speedFactor * globalSpeed
+        };
     }
 };
 
@@ -246,9 +253,9 @@ Player.prototype.update = function(dt) {
 
     // check for enemy touch/graze
     for (i=0; i < numEnemies; i++) {
-        if (((allEnemies[i].y > this.y && allEnemies[i].y - this.y <= 58) || (this.y > allEnemies[i].y && this.y - allEnemies[i].y <= 74)) && Math.abs(allEnemies[i].x - this.x) < 69) {
+        if (this.checkCollide(allEnemies[i])) {
             this.touchEnemy();
-        } else if (this.y < 303 && ((allEnemies[i].y > this.y && allEnemies[i].y - this.y <= 62) || (this.y > allEnemies[i].y && this.y - allEnemies[i].y <= 79)) && Math.abs(allEnemies[i].x - this.x) < 75) {
+        } else if (this.y < 303 && this.checkGraze(allEnemies[i])) {
             // player gains points for grazing enemy sprites
             this.score += Math.round(35 * dt);
         }
@@ -258,6 +265,18 @@ Player.prototype.update = function(dt) {
     if (!this.won && (this.y <= rows.w)) {
         this.win();
     }
+};
+
+// check for collision with enemy
+Player.prototype.checkCollide = function(enemy) {
+    return (((enemy.y > this.y && enemy.y - this.y <= 58) || (this.y > enemy.y && this.y - enemy.y <= 74)) &&
+        Math.abs(enemy.x - this.x) < 69);
+};
+
+// check if grazing enemy sprite
+Player.prototype.checkGraze = function(enemy) {
+    return (((enemy.y > this.y && enemy.y - this.y <= 62) || (this.y > enemy.y && this.y - enemy.y <= 79)) &&
+        Math.abs(enemy.x - this.x) < 75);
 };
 
 // reset player position (upon death or level change)
@@ -272,16 +291,16 @@ Player.prototype.respawn = function() {
 Player.prototype.touchEnemy = function() {
     this.lives--;
     (this.score - 50) >= 0 ? this.score -= 50 : this.score = 0;
-    this.lives ? this.respawn() : Game.gameOver();
+    this.lives ? this.respawn() : game.gameOver();
 };
 
 // adds up score and triggers level complete
 Player.prototype.win = function() {
-    var level = Game.level,
+    var level = game.level,
         completeTime;
 
-    Game.levelStopTime = Date.now();
-    completeTime = Game.levelStopTime - Game.levelStartTime - Game.totalPauseTime;
+    game.levelStopTime = Date.now();
+    completeTime = game.levelStopTime - game.levelStartTime - game.totalPauseTime;
 
     // bonus points for fast level completion
     if (completeTime <= 1500) {
@@ -300,7 +319,7 @@ Player.prototype.win = function() {
     this.score += level * 100;
 
     this.won = true;
-    Game.levelComplete();
+    game.levelComplete();
 };
 
 // renders player sprite to canvas, similar to enemy render method
@@ -314,8 +333,8 @@ Player.prototype.render = function() {
 // generates movement values based on player input
 Player.prototype.handleInput = function(key, step, isShifting) {
     // pause using keyboard
-    if (key === 'p' && step === 'down' && UI.pauseButton) {
-        Game.togglePause();
+    if (key === 'p' && step === 'down' && ui.pauseButton) {
+        game.togglePause();
         return;
     }
 
@@ -374,59 +393,64 @@ Player.prototype.handleInput = function(key, step, isShifting) {
 /* UI object */
 
 // contains all user interface elements
-var UI = {};
+var ui = {
+    // whether or not pause button should be visible
+    'pauseButton': true,
+    // timer for temporary UI elements (ie. level start/complete fade)
+    'timer': 3.0
+};
 
 // calls required update methods for UI elements
-UI.update = function(dt) {
+ui.update = function(dt) {
     // timers for level start and complete events, including reset pause timer
-    if (Game.levelStarted) {
+    if (game.levelStarted) {
         this.pauseButton = false;
-        UI.timer > 0 ? UI.timer -= 1.5 * dt : (
-            Game.levelStarted = false,
-            UI.timer = 3.0,
-            Game.totalPauseTime = 0,
-            Game.levelStartTime = Date.now()
+        ui.timer > 0 ? ui.timer -= 1.5 * dt : (
+            game.levelStarted = false,
+            ui.timer = 3.0,
+            game.totalPauseTime = 0,
+            game.levelStartTime = Date.now()
         );
     } else if (player.won) {
         this.pauseButton = false;
-        UI.timer > 0 ? UI.timer -= 1.5 * dt : (player.won = false, UI.timer = 3.0);
-    } else if (!Game.isGameOver) {
+        ui.timer > 0 ? ui.timer -= 1.5 * dt : (
+            player.won = false,
+            ui.timer = 3.0
+        );
+    } else if (!game.isGameOver) {
         // restores pause button during gameplay
         /* TODO: method to simplify 'player is ingame' checks */
         this.pauseButton = true;
-    } else if (Game.isGameOver) {
+    } else if (game.isGameOver) {
         this.pauseButton = false;
     }
 };
 
-// timer for temporary UI elements (ie. level start/complete fade)
-UI.timer = 3.0;
-
 // renders applicable UI elements
-UI.render = function() {
+ui.render = function() {
     if (this.pauseButton) {
         this.renderPauseButton();
     }
-    if (Game.levelStarted) {
-        this.renderLevel(Game.level);
+    if (game.levelStarted) {
+        this.renderLevel(game.level);
     }
     if (player.sprite && !player.won) {
         this.renderLives();
     }
-    if (Game.paused) {
+    if (game.paused) {
         this.renderPaused();
     }
     if (player.won) {
         this.renderLevelComplete();
     }
-    if (Game.isGameOver) {
+    if (game.isGameOver) {
         this.renderGO();
     }
     this.renderScore();
 };
 
 // display remaining lives
-UI.renderLives = function() {
+ui.renderLives = function() {
     var spritePos = 1120,
         i;
 
@@ -442,7 +466,7 @@ UI.renderLives = function() {
 };
 
 // display player score
-UI.renderScore = function() {
+ui.renderScore = function() {
     ctx.font = 'bold 32px sans-serif';
     ctx.lineWidth = 2;
     ctx.fillText(''+player.score, 505/2, 100);
@@ -451,18 +475,15 @@ UI.renderScore = function() {
     ctx.lineWidth = 3;
 };
 
-// whether or not pause button should be visible
-UI.pauseButton = true;
-
 // draw pause/resume button
-UI.renderPauseButton = function() {
+ui.renderPauseButton = function() {
     ctx.beginPath();
     ctx.fillStyle = 'red';
     ctx.arc(46, 90, 22, 0, 2*Math.PI);
     ctx.fill();
     ctx.fillStyle = 'white';
     ctx.closePath;
-    Game.paused ? (
+    game.paused ? (
         ctx.beginPath(),
         ctx.moveTo(37, 80),
         ctx.lineTo(58, 90),
@@ -477,42 +498,42 @@ UI.renderPauseButton = function() {
 };
 
 // draws level start text
-UI.renderLevel = function(level) {
-    ctx.globalAlpha = UI.timer > 1.0 ? 1.0 : UI.timer + 0.1;
+ui.renderLevel = function(level) {
+    ctx.globalAlpha = ui.timer > 1.0 ? 1.0 : ui.timer + 0.1;
     ctx.fillText('Level ' + level, 505/2, 333);
     ctx.strokeText('Level ' + level, 505/2, 333);
     ctx.globalAlpha = 1.0;
 };
 
 // draws level complete text
-UI.renderLevelComplete = function() {
-    ctx.globalAlpha = UI.timer > 1.0 ? 1.0 : UI.timer + 0.1;
+ui.renderLevelComplete = function() {
+    ctx.globalAlpha = ui.timer > 1.0 ? 1.0 : ui.timer + 0.1;
     ctx.fillText('Level Complete!', 505/2, 333);
     ctx.strokeText('Level Complete!', 505/2, 333);
     ctx.globalAlpha = 1.0;
 };
 
 // draw pause screen
-UI.renderPaused = function() {
+ui.renderPaused = function() {
     ctx.fillText('PAUSED', 505/2, 333);
     ctx.strokeText('PAUSED', 505/2, 333);
 };
 
 // draw game over screen
-UI.renderGO = function() {
+ui.renderGO = function() {
     ctx.fillText('GAME OVER', 505/2, 333);
     ctx.strokeText('GAME OVER', 505/2, 333);
 };
 
 // handles mouse-interactive UI elements
-UI.handleClicks = function(e) {
+ui.handleClicks = function(e) {
     thisCanvas = document.getElementsByTagName('canvas')[0];
     topBorder = thisCanvas.getBoundingClientRect().top;
     leftBorder = thisCanvas.getBoundingClientRect().left;
 
     // clickable pause button
-    if (UI.pauseButton && e.clientX - leftBorder > 24 && e.clientX - leftBorder < 68 && e.clientY - topBorder > 68 && e.clientY - topBorder < 112) {
-        Game.togglePause();
+    if (ui.pauseButton && e.clientX - leftBorder > 24 && e.clientX - leftBorder < 68 && e.clientY - topBorder > 68 && e.clientY - topBorder < 112) {
+        game.togglePause();
     }
 
     /* TODO: game start/next level buttons */
@@ -523,23 +544,22 @@ UI.handleClicks = function(e) {
 /* Game object */
 
 // contains gameplay and level code
-var Game = {};
+var game = {
+    // current level
+    'level': 1,
+    // level starting state
+    'levelStarted': true
+};
 
 // initializes player and starts the game
-Game.play = function() {
+game.play = function() {
     player = new Player();
     this.playLevel(this.level);
 };
 
-// current level
-Game.level = 1;
-
-// level starting state
-Game.levelStarted = true;
-
 // object containing levels (enemies and powerups)
 // each level is an array containing enemy and powerup objects to spawn and their parameters
-Game.levels = {
+game.levels = {
     1: [
         Enemy(cols.a, rows.sm, 100, false), Enemy(cols.d, rows.sb, 100, false), Enemy(cols.c, rows.st, 100, false)
     ],
@@ -550,7 +570,7 @@ Game.levels = {
 };
 
 // handles state changes
-Game.update = function() {
+game.update = function() {
     // disables player movement when necessary
     player.speedFactor = (this.levelStarted || player.won || this.isGameOver) ? 0 : 1;
     if ((!player.won) && allEnemies.length === 0) {
@@ -562,7 +582,7 @@ Game.update = function() {
 
 // pause/unpause the game
 // if called with 'force' parameter, will set the pause state to value of 'force'
-Game.togglePause = function(force) {
+game.togglePause = function(force) {
     force = force || false;
     if (force) {
         this.paused = false;
@@ -579,7 +599,7 @@ Game.togglePause = function(force) {
 };
 
 // GAME OVER
-Game.gameOver = function() {
+game.gameOver = function() {
     if (player.won) {
         player.won = false;
     }
@@ -590,7 +610,7 @@ Game.gameOver = function() {
 };
 
 // load entities from level array and update level counter, then trigger game start
-Game.playLevel = function(level) {
+game.playLevel = function(level) {
     this.level = level;
     this.levels[level].forEach(function(entity) {
         if (entity instanceof Enemy) {
@@ -601,7 +621,7 @@ Game.playLevel = function(level) {
 };
 
 // clear non-player entities in preparation for level change/game over
-Game.levelComplete = function() {
+game.levelComplete = function() {
     allEnemies.length = 0;
 };
 
@@ -611,7 +631,7 @@ Game.levelComplete = function() {
 
 
 // start playing!
-Game.play();
+game.play();
 
 
 
@@ -644,13 +664,13 @@ document.addEventListener('keyup', function(e) {
 });
 
 // for clickable UI elements
-document.addEventListener("click", UI.handleClicks);
+document.addEventListener("click", ui.handleClicks);
 
 // pause game on loss of focus or backed up calls will send enemies all over the place
 window.addEventListener('blur', function(){
     // no pause screen on special states (game over/level started/level complete)
-    if (!Game.isGameOver && !Game.levelStarted && !(allEnemies.length === 0)) {
-        Game.togglePause(true);
+    if (!game.isGameOver && !game.levelStarted && !(allEnemies.length === 0)) {
+        game.togglePause(true);
     } else {
         // fake pause if lost focus during special state
         globalSpeed = 0;
@@ -659,7 +679,7 @@ window.addEventListener('blur', function(){
 
 // undo fake pause on focus resume
 window.addEventListener('focus', function(){
-    if (!Game.paused && globalSpeed === 0) {
+    if (!game.paused && globalSpeed === 0) {
         globalSpeed = 1;
     }
 });

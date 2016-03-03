@@ -101,8 +101,8 @@ var Engine = (function(global) {
         });
         player.update(dt);
         // added for UI and game states
-        UI.update(dt);
-        Game.update();
+        ui.update(dt);
+        game.update();
     }
 
     /* This function initially draws the "game level", it will then call
@@ -161,7 +161,7 @@ var Engine = (function(global) {
 
         player.render();
         // added for UI overlay
-        UI.render();
+        ui.render();
     }
 
     /* This function does nothing but it could have been a good place to
