@@ -53,8 +53,8 @@ var Enemy = function(posX, posY, speed, onPatrol) {
     }
 
     // Assign valid spawn coordinates
-    this.x = isNaN(parseFloat(posX)) || posX > 505 || posX < -100 ? cols.a : posX;
-    this.y = isNaN(parseFloat(posY)) || posY > rows.gb || posY < rows.st ? rows.sm : posY;
+    this.x = (isNaN(parseFloat(posX)) || (posX > 505) || (posX < -100)) ? cols.a : posX;
+    this.y = (isNaN(parseFloat(posY)) || (posY > rows.gb) || (posY < rows.st)) ? rows.sm : posY;
 
     // Sets enemy speed factor (negative reverses direction)
     this.speed = isNaN(parseFloat(speed)) ? 100 : speed;
@@ -122,13 +122,22 @@ Enemy.prototype.update = function (dt) {
         }
     }
 
-    // check for collision between enemies
+    // reverse direction if colliding with another enemy
     for (i=0; i < enemies; i++) {
-        if (allEnemies[i] !== this && allEnemies[i].y === this.y && Math.abs(allEnemies[i].x - this.x) <= 93) {
+        if (this.checkCollide(allEnemies[i], this)) {
+            // make sure both enemies reverse in head-on collision
+            if (this.speed * allEnemies[i].speed < 0) {
+                allEnemies[i].changeDir();
+            }
             this.changeDir();
             this.x = xBeforeCol;
         }
     }
+};
+
+// check collision between enemies
+Enemy.prototype.checkCollide = function (enemyOne, enemyTwo) {
+    return (enemyOne !== enemyTwo && enemyOne.y === enemyTwo.y && Math.abs(enemyOne.x - enemyTwo.x) <= 93);
 };
 
 // Draw the enemy on the screen, required method for game
