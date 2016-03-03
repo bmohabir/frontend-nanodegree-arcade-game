@@ -151,16 +151,13 @@ Enemy.prototype.render = function() {
 /* Player class */
 
 // Player constructor
-var Player = function() {
+var Player = function(lives, sprite) {
     // sets position to default spawn coordinates
     this.x = this.startPos.x;
     this.y = this.startPos.y;
 
-    // loads default sprite
-    this.sprite = this.getSprite();
-
-    // self-explanatory
-    this.lives = 4;
+    this.sprite = this.getSprite(sprite);
+    this.lives = (isNaN(parseInt(lives)) || lives < 1) ? 4 : lives;
     this.score = 0;
 
     // for handling smooth movement
