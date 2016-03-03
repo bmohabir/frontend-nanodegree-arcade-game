@@ -254,10 +254,10 @@ Player.prototype.update = function(dt) {
     // check for enemy touch/graze
     for (i=0; i < numEnemies; i++) {
         if (this.checkCollide(allEnemies[i])) {
-            this.touchEnemy();
-        } else if (this.y < 303 && this.checkGraze(allEnemies[i])) {
+            this.die();
+        } else if (this.checkGraze(allEnemies[i])) {
             // player gains points for grazing enemy sprites
-            this.score += Math.round(35 * dt);
+            this.score += Math.round(100 * dt);
         }
     }
 
@@ -269,14 +269,14 @@ Player.prototype.update = function(dt) {
 
 // check for collision with enemy
 Player.prototype.checkCollide = function(enemy) {
-    return (((enemy.y > this.y && enemy.y - this.y <= 58) || (this.y > enemy.y && this.y - enemy.y <= 74)) &&
-        Math.abs(enemy.x - this.x) < 69);
+    return (((enemy.y > this.y && enemy.y - this.y <= 60) || (this.y > enemy.y && this.y - enemy.y <= 48)) &&
+        Math.abs(enemy.x - this.x) <= 64);
 };
 
 // check if grazing enemy sprite
 Player.prototype.checkGraze = function(enemy) {
-    return (((enemy.y > this.y && enemy.y - this.y <= 62) || (this.y > enemy.y && this.y - enemy.y <= 79)) &&
-        Math.abs(enemy.x - this.x) < 75);
+    return (((enemy.y > this.y && enemy.y - this.y < 62) || (this.y > enemy.y && this.y - enemy.y <= 32)) &&
+        Math.abs(enemy.x - this.x) < 78);
 };
 
 // reset player position (upon death or level change)
@@ -288,7 +288,7 @@ Player.prototype.respawn = function() {
 };
 
 // handles player death from enemy contact
-Player.prototype.touchEnemy = function() {
+Player.prototype.die = function() {
     this.lives--;
     (this.score - 50) >= 0 ? this.score -= 50 : this.score = 0;
     this.lives ? this.respawn() : game.gameOver();
