@@ -447,8 +447,9 @@ Player.prototype.handleInput = function(key, step, isShifting) {
 
 // contains all user interface elements
 var ui = {
-    // timer for temporary UI elements (ie. level start/complete fade)
-    'timer': 3.0
+    // timers for temporary UI elements (ie. level start/complete fade)
+    'timer': 3.0,
+    'timerB': {'value': 0.5, 'direction': 1}
 };
 
 // calls required update methods for UI elements
@@ -476,6 +477,13 @@ ui.update = function(dt) {
                 this.pleaseWait = false,
                 this.timer = 3.0
             );
+            break;
+        case 'title':
+        case 'nextlvlscreen':
+            this.timerB.value += this.timerB.direction * dt;
+            if (this.timerB.value >= 1.0 || this.timerB.value <= 0.0) {
+                this.timerB.direction *= -1;
+            }
             break;
     }
 };
@@ -542,8 +550,10 @@ ui.renderTitle = function() {
     ctx.closePath();
     ctx.font = 'bold 24px sans-serif';
     ctx.lineWidth = 2;
+    ctx.globalAlpha = this.timerB.value > 1.0 ? 1.0 : this.timerB.value + 0.1;
     ctx.fillText('(press the spacebar to begin)', 505/2, 565);
     ctx.strokeText('(press the spacebar to begin)', 505/2, 565);
+    ctx.globalAlpha = 1.0;
     ctx.lineWidth = 3;
     ctx.font = 'bold 60px sans-serif';
 };
@@ -608,7 +618,7 @@ ui.renderPauseButton = function() {
 // draws level start text
 // level: number of current level
 ui.renderLvlStart = function(level) {
-    ctx.globalAlpha = ui.timer > 1.0 ? 1.0 : ui.timer + 0.1;
+    ctx.globalAlpha = this.timer > 1.0 ? 1.0 : this.timer + 0.1;
     ctx.fillText('Level ' + level, 505/2, 333);
     ctx.strokeText('Level ' + level, 505/2, 333);
     ctx.globalAlpha = 1.0;
@@ -616,7 +626,7 @@ ui.renderLvlStart = function(level) {
 
 // draws level complete text
 ui.renderLvlComplete = function() {
-    ctx.globalAlpha = ui.timer > 1.0 ? 1.0 : ui.timer + 0.1;
+    ctx.globalAlpha = this.timer > 1.0 ? 1.0 : this.timer + 0.1;
     ctx.fillText('Level Complete!', 505/2, 333);
     ctx.strokeText('Level Complete!', 505/2, 333);
     ctx.globalAlpha = 1.0;
@@ -642,8 +652,10 @@ ui.renderNextScreen = function() {
     ctx.fillText('Next', 505/2-2, 325);
     ctx.font = 'bold 24px sans-serif';
     ctx.lineWidth = 2;
+    ctx.globalAlpha = this.timerB.value > 1.0 ? 1.0 : this.timerB.value + 0.1;
     ctx.fillText('(press the spacebar to continue)', 505/2, 565);
     ctx.strokeText('(press the spacebar to continue)', 505/2, 565);
+    ctx.globalAlpha = 1.0;
     ctx.lineWidth = 3;
     ctx.font = 'bold 60px sans-serif';
 };
