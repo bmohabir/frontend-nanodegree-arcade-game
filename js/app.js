@@ -32,6 +32,7 @@ var cols = {
 var globalSpeed = 1;
 
 // array containing currently spawned enemies
+// starting value contains enemies shown on title screen
 var allEnemies = [];
 
 /* TODO: powerups array */
@@ -95,8 +96,9 @@ Enemy.prototype.changeDir = function () {
 // also handles level boundary collision for enemies (if applicable)
 Enemy.prototype.update = function (dt) {
     // only update enemy position while game is active
-    // or game over (because it looks cool)
-    if (game.state !== 'ingame' && game.state !== 'gameover') {
+    // or title screen/game over (because it looks cool)
+    if (game.state !== 'ingame' && game.state !== 'gameover' &&
+        game.state !== 'title') {
         return;
     }
 
@@ -164,13 +166,16 @@ Enemy.prototype.render = function() {
 // Player constructor
 // lives: optional, number of lives to start with (default: 4)
 // sprite: optional, character to start with, accepts key names
-//     in .sprites object
+//     in .sprites object (default: 'default')
 var Player = function(lives, sprite) {
+    if(!(this instanceof Player)) {
+        return new Player(lives, sprite);
+    }
     // sets position to default spawn coordinates
     this.x = this.startPos.x;
     this.y = this.startPos.y;
 
-    this.sprite = this.getSprite(sprite);
+    this.sprite = sprite || 'default';
     this.lives = (isNaN(parseInt(lives)) || lives < 1) ? 4 : lives;
     this.score = 0;
     this.alive = true;
@@ -184,6 +189,15 @@ var Player = function(lives, sprite) {
 
     // for game start/next level
     this.ready = false;
+};
+
+// reset player sprite, lives and score
+// lives: same as constructor
+// sprite: same as constructor
+Player.prototype.reset = function(lives, sprite) {
+    this.sprite = sprite || 'default';
+    this.lives = (isNaN(parseInt(lives)) || lives < 1) ? 4 : lives;
+    this.score = 0;
 };
 
 // starting position preset
@@ -202,15 +216,14 @@ Player.prototype.sprites = {
     'princess': {'sprite': 'images/char-princess-girl.png', 'available': false}
 };
 
-// loads player sprite
-// aSprite: optional, key name in .sprites object
-// loads default sprite if aSprite does not have a valid value
+// returns player sprite image
+// aSprite: optional, key name in .sprites object (default: 'default')
 /* TODO: character selection */
-Player.prototype.getSprite = function(aSprite) {
-    if (!aSprite || !this.sprites[aSprite]) {
-        aSprite = 'default';
+Player.prototype.getSprite = function() {
+    if (!this.sprite || !this.sprites[this.sprite]) {
+        this.sprite = 'default';
     }
-    return this.sprites[aSprite].sprite;
+    return this.sprites[this.sprite].sprite;
 };
 
 // horizontal and vertical speed factors
@@ -358,7 +371,7 @@ Player.prototype.win = function() {
 // renders player sprite to canvas, similar to enemy render method
 Player.prototype.render = function() {
     if (this.sprite) {
-        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+        ctx.drawImage(Resources.get(this.getSprite()), this.x, this.y);
     }
 };
 
@@ -457,6 +470,13 @@ ui.update = function(dt) {
                 this.timer = 3.0
             );
             break;
+        case 'gameover':
+            this.pleaseWait = true;
+            this.timer > 0 ? this.timer -= 0.75 * dt : (
+                this.pleaseWait = false,
+                this.timer = 3.0
+            );
+            break;
     }
 };
 
@@ -537,7 +557,7 @@ ui.renderLives = function() {
         if (i) {
             ctx.save();
             ctx.scale(0.4, 0.4);
-            ctx.drawImage(Resources.get(player.sprite), spritePos, 125);
+            ctx.drawImage(Resources.get(player.getSprite()), spritePos, 125);
             ctx.restore();
             spritePos -= 80;
         }
@@ -684,7 +704,12 @@ game.play = function() {
 
 // object containing levels (enemies and powerups)
 // each level is an array containing enemy and powerup objects to spawn
+// title level contains objects to spawn on title screen
 game.levels = {
+    'title': [
+        Enemy(cols.a, rows.sm, 250, true), Enemy(cols.e, rows.sb, -350, false),
+        Enemy(cols.a, rows.st, 250, false), Enemy(cols.d, rows.st, 250, false)
+    ],
     1: [
         Enemy(cols.a, rows.sm, 100, false), Enemy(cols.d, rows.sb, 100, false),
         Enemy(cols.c, rows.st, 100, false)
@@ -699,16 +724,21 @@ game.levels = {
 game.update = function() {
     var nextLevel = this.level + 1;
 
-    // ends game if player dies and has no lives left
-    if (!player.alive) {
-        player.lives ? player.respawn() : this.gameOver();
-    }
-
     // check state and call appropriate methods
     switch (this.state) {
         case 'title':
+            // spawn title screen entities
+            if (!allEnemies.length){
+                this.levels.title.forEach(function(entity) {
+                    if (entity instanceof Enemy) {
+                        game.spawnEnemy(entity);
+                    }
+                });
+            }
             // wait for player ready
             if (player.ready) {
+                // clear title screen enemies
+                allEnemies.length = 0;
                 this.playLevel(this.level);
             }
             break;
@@ -735,6 +765,15 @@ game.update = function() {
                 this.playLevel(nextLevel);
             }
             break;
+        case 'gameover':
+            if (!ui.pleaseWait) {
+                allEnemies.length = 0;
+                player.reset();
+                player.respawn();
+                this.level = 1;
+                this.setState('title');
+            }
+            break;
     }
 
     // triggers level complete sequence
@@ -742,6 +781,11 @@ game.update = function() {
         // reset player state to prevent level complete loop
         player.won = false;
         this.levelComplete();
+    }
+
+    // ends game if player dies and has no lives left
+    if (!player.alive) {
+        player.lives ? player.respawn() : this.gameOver();
     }
 };
 
@@ -808,6 +852,7 @@ game.setState = function(state) {
 
 
 
+/* TODO: design more levels */
 /* TODO: powerups, character select */
 
 
