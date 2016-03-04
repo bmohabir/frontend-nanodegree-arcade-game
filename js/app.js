@@ -10,11 +10,13 @@
 
 // used by ui.handleClicks method
 var thisCanvas,
-    topBorder,
-    leftBorder;
+    tBorder,
+    lBorder;
 
-// x and y coordinates for placing sprites on tiles
-// (for convenience)
+// x and y coordinates for placing sprites on tiles (for convenience)
+// w = water
+// st/sm/sb = stone top/middle/bottom
+// gt/gb = grass top/bottom
 var rows = {
     'w': -6,
     'st': 62,
@@ -31,38 +33,41 @@ var cols = {
     'e': 404
 };
 
-// speed multiplier for all moving entities, used for special states (ie. paused)
+// speed multiplier for all game movement
 var globalSpeed = 1;
 
 // array containing currently spawned enemies
 var allEnemies = [];
+
+/* TODO: powerups array */
 
 
 
 /* Enemy class */
 
 // Constructor for enemies our player must avoid
+// posX: numerical horizontal spawn coordinate
+// posY: numerical vertical spawn coordinate
+// speed: numerical speed; positive moves left to right,
+//     negative moves right to left
+// onPatrol: if false, enemy travels offscreen and returns
+//     from opposite side; if true, enemy travels back and
+//     forth within visible level boundaries
 var Enemy = function(posX, posY, speed, onPatrol) {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
-    // Ensure constructor is called with new keyword to keep vars
-    // in correct scope (and shorten new enemy calls)
+    // ensure constructor is called with new keyword to keep vars in correct
+    // scope (and shorten new enemy calls)
     if(!(this instanceof Enemy)) {
         return new Enemy(posX, posY, speed, onPatrol);
     }
 
-    // Assign valid spawn coordinates
-    this.x = (isNaN(parseFloat(posX)) || (posX > 505) || (posX < -100)) ? cols.a : posX;
-    this.y = (isNaN(parseFloat(posY)) || (posY > rows.gb) || (posY < rows.st)) ? rows.sm : posY;
+    // assign only valid spawn coordinates
+    this.x = (isNaN(parseFloat(posX)) || (posX > 505) || (posX < -100)) ?
+        cols.a : posX;
+    this.y = (isNaN(parseFloat(posY)) || (posY > rows.gb) || (posY < rows.st)) ?
+        rows.sm : posY;
 
-    // Sets enemy speed factor (negative reverses direction)
     this.speed = isNaN(parseFloat(speed)) ? 100 : speed;
-
-    // Loads correctly facing sprite
-    this.sprite = this.loadSprite();
-
-    // Determines if enemy 'collides' with level boundaries
+    this.sprite = this.getSprite();
     this.onPatrol = onPatrol || false;
 };
 
@@ -76,29 +81,35 @@ Enemy.prototype.sprites = {
 Enemy.prototype.speedFactor = 1;
 
 // returns calculated enemy speed
-
 Enemy.prototype.getSpeed = function() {
     return (globalSpeed * this.speedFactor * this.speed);
 };
 
-// loads correct sprite based on enemy movement direction
-Enemy.prototype.loadSprite = function () {
+// returns a sprite from .sprites object based on enemy movement direction
+Enemy.prototype.getSprite = function () {
     return (this.speed < 0) ? this.sprites.l : this.sprites.r;
 };
 
-// reverses movement direction of enemy
+// reverses direction of enemy movement and updates sprite
 Enemy.prototype.changeDir = function () {
-    this.speed = -1 * this.speed;
-    this.sprite = this.loadSprite();
+    this.speed *= -1;
+    this.sprite = this.getSprite();
 };
 
 // Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-// (also handles enemy-enemy and enemy-level collision)
+// dt: time delta between ticks
+// also handles level boundary collision for enemies (if applicable)
 Enemy.prototype.update = function (dt) {
-    var enemies = allEnemies.length,
-        xBeforeCol = this.x,
-        i;
+    // only update enemy position while game is active
+    // or game over (because it looks cool)
+    if (game.state !== 'ingame' && game.state !== 'gameover') {
+        return;
+    }
+
+    var enemies = allEnemies.length;
+    // store last known 'safe' position
+    var xBeforeCol = this.x;
+    var i;
 
     // move enemy to new position
     this.x += this.getSpeed() * dt;
@@ -107,8 +118,8 @@ Enemy.prototype.update = function (dt) {
     if (this.onPatrol) {
         if (this.speed > 0 && this.x >= 407) {
             this.changeDir();
-            // return enemy to position before collision to prevent
-            // getting stuck in collision loop
+            // return enemy to safe position to prevent getting stuck in
+            // collision loop
             this.x = xBeforeCol;
         } else if (this.speed < 0 && this.x <= -5) {
             this.changeDir();
@@ -125,7 +136,8 @@ Enemy.prototype.update = function (dt) {
     // reverse direction if colliding with another enemy
     for (i=0; i < enemies; i++) {
         if (this.checkCollide(allEnemies[i], this)) {
-            // make sure both enemies reverse in head-on collision
+            // make sure both enemies reverse in head-on collision (for
+            // consistency)
             if (this.speed * allEnemies[i].speed < 0) {
                 allEnemies[i].changeDir();
             }
@@ -135,7 +147,9 @@ Enemy.prototype.update = function (dt) {
     }
 };
 
-// check collision between enemies
+// check for collision between two enemies, returns true or false
+// enemyOne: first enemy object
+// enemyTwo: second enemy object
 Enemy.prototype.checkCollide = function (enemyOne, enemyTwo) {
     return (enemyOne !== enemyTwo && enemyOne.y === enemyTwo.y &&
         Math.abs(enemyOne.x - enemyTwo.x) <= 93);
@@ -151,6 +165,9 @@ Enemy.prototype.render = function() {
 /* Player class */
 
 // Player constructor
+// lives: number of lives to start with
+// sprite: character to start with, accepts key names
+//     in .sprites object
 var Player = function(lives, sprite) {
     // sets position to default spawn coordinates
     this.x = this.startPos.x;
@@ -159,6 +176,7 @@ var Player = function(lives, sprite) {
     this.sprite = this.getSprite(sprite);
     this.lives = (isNaN(parseInt(lives)) || lives < 1) ? 4 : lives;
     this.score = 0;
+    this.alive = true;
 
     // for handling smooth movement
     this.xMove = 0;
@@ -166,6 +184,9 @@ var Player = function(lives, sprite) {
 
     // stores shift key state
     this.isShifting = false;
+
+    // for game start/next level
+    this.ready = false;
 };
 
 // starting position preset
@@ -174,7 +195,8 @@ Player.prototype.startPos = {
     'y': rows.gb
 };
 
-// player sprites, 'available' property is toggled when sprite is unlocked
+// usable player sprites
+/* TODO: 'available' property is toggled when sprite is unlocked */
 Player.prototype.sprites = {
     'default': {'sprite': 'images/char-boy.png', 'available': true},
     'catgirl': {'sprite': 'images/char-cat-girl.png', 'available': false},
@@ -183,14 +205,18 @@ Player.prototype.sprites = {
     'princess': {'sprite': 'images/char-princess-girl.png', 'available': false}
 };
 
-// selects player sprite from player sprites object, or selects default
+// loads player sprite
+// aSprite: key name in .sprites object
+// loads default sprite if aSprite does not have a valid value
 /* TODO: character selection */
 Player.prototype.getSprite = function(aSprite) {
-    aSprite = aSprite || 'default';
+    if (!aSprite || !this.sprites[aSprite]) {
+        aSprite = 'default';
+    }
     return this.sprites[aSprite].sprite;
 };
 
-// horizontal and vertical speed
+// horizontal and vertical speed factors
 Player.prototype.speed = {
     'x': 350,
     'y': 400
@@ -199,7 +225,8 @@ Player.prototype.speed = {
 // player speed multipler
 Player.prototype.speedFactor = 1;
 
-// returns calculatd player speed
+// returns object containing calculated player horizontal and vertical speed
+// halves speed if isShifting is true
 Player.prototype.getSpeed = function() {
     var speed;
     if (this.isShifting) {
@@ -216,11 +243,18 @@ Player.prototype.getSpeed = function() {
 };
 
 // updates player's position and checks for win/death conditions
+// dt: delta time between ticks
+// also increases player score when grazing enemies
 Player.prototype.update = function(dt) {
-    var numEnemies = allEnemies.length,
-        xSpeed = this.getSpeed().x,
-        ySpeed = this.getSpeed().y,
-        i;
+    // stop updating player unless game is active
+    if (game.state !== 'ingame') {
+        return;
+    }
+
+    var numEnemies = allEnemies.length;
+    var xSpeed = this.getSpeed().x;
+    var ySpeed = this.getSpeed().y;
+    var i;
 
     // smooth movement animation
     if (this.xMove > 0) {
@@ -237,12 +271,11 @@ Player.prototype.update = function(dt) {
 
     // keep player in bounds
     if (this.x > 421) {
-            this.x = 421;
+        this.x = 421;
     } else if (this.x < -17) {
-            this.x = -17;
+        this.x = -17;
     }
-    if (this.y > 404)
-    {
+    if (this.y > 404) {
         this.y = 404;
     } else if (this.y < -11) {
         this.y = -11;
@@ -264,51 +297,58 @@ Player.prototype.update = function(dt) {
     }
 };
 
-// check for collision with enemy
+// check for collision with enemy, returns true or false
+// enemy: enemy object to check for collision with
 Player.prototype.checkCollide = function(enemy) {
-    return (((enemy.y > this.y && enemy.y - this.y <= 60) || (this.y > enemy.y && this.y - enemy.y <= 48)) &&
+    return (((enemy.y > this.y && enemy.y - this.y <= 60) ||
+        (this.y > enemy.y && this.y - enemy.y <= 48)) &&
         Math.abs(enemy.x - this.x) <= 64);
 };
 
-// check if grazing enemy sprite
+// check if grazing enemy sprite, returns true or false
+// enemy: enemy object to check for graze
 Player.prototype.checkGraze = function(enemy) {
-    return (((enemy.y > this.y && enemy.y - this.y < 62) || (this.y > enemy.y && this.y - enemy.y <= 32)) &&
+    return (((enemy.y > this.y && enemy.y - this.y < 62) ||
+        (this.y > enemy.y && this.y - enemy.y <= 32)) &&
         Math.abs(enemy.x - this.x) < 78);
 };
 
-// reset player position (upon death or level change)
+// reset player state
 Player.prototype.respawn = function() {
     this.x = this.startPos.x;
     this.y = this.startPos.y;
     this.xMove = 0;
     this.yMove = 0;
+    this.alive = true;
+    this.ready = false;
 };
 
-// handles player death from enemy contact
+// handles player death and sets player dead state
 Player.prototype.die = function() {
+    this.alive = false;
     this.lives--;
     (this.score - 50) >= 0 ? this.score -= 50 : this.score = 0;
-    this.lives ? this.respawn() : game.gameOver();
 };
 
-// adds up score and triggers level complete
+// adds level completion bonus to score and sets player win state
 Player.prototype.win = function() {
-    var level = game.level,
-        completeTime;
+    var level = game.level;
+    var finishTime;
 
     game.levelStopTime = Date.now();
-    completeTime = game.levelStopTime - game.levelStartTime - game.totalPauseTime;
+    // calculate completion time by subtracting time paused from time in game
+    finishTime = game.levelStopTime - game.levelStartTime - game.totalPauseTime;
 
     // bonus points for fast level completion
-    if (completeTime <= 1500) {
+    if (finishTime <= 1500) {
         this.score += level * 800;
-    } else if (completeTime <= 2000) {
+    } else if (finishTime <= 2000) {
         this.score += level * 500;
-    } else if (completeTime <= 3000) {
+    } else if (finishTime <= 3000) {
         this.score += level * 400;
-    } else if (completeTime <= 5000) {
+    } else if (finishTime <= 5000) {
         this.score += level * 200;
-    } else if (completeTime <= 10000) {
+    } else if (finishTime <= 10000) {
         this.score += level * 100;
     }
 
@@ -316,7 +356,6 @@ Player.prototype.win = function() {
     this.score += level * 100;
 
     this.won = true;
-    game.levelComplete();
 };
 
 // renders player sprite to canvas, similar to enemy render method
@@ -328,16 +367,24 @@ Player.prototype.render = function() {
 };
 
 // generates movement values based on player input
+// key: string containing key name from allowedKeys
+// step: string 'up' or 'down' referring to key being pressed or released
+// isShifting: should be true or false passed based on whether or not shift key
+//     is being held, used to slow down player movement when shift is held
 Player.prototype.handleInput = function(key, step, isShifting) {
-    // pause using keyboard
-    if (key === 'p' && step === 'down' && ui.pauseButton) {
+    // set player ready state using spacebar
+    if ((game.state === 'title' || game.state === 'nextlvlscreen') &&
+        !ui.pleaseWait && key === 'space' && step === 'up') {
+        this.ready = true;
+    }
+
+    // pause using p key
+    if (key === 'p' && step === 'down' && game.isPausable) {
         game.togglePause();
         return;
     }
 
-    /* TODO: spacebar for game start/next level */
-
-    // getSpeed will slow movement when isShifting is true
+    // set player shifting state
     this.isShifting = isShifting;
 
     if (step === 'down') {
@@ -391,59 +438,98 @@ Player.prototype.handleInput = function(key, step, isShifting) {
 
 // contains all user interface elements
 var ui = {
-    // whether or not pause button should be visible
-    'pauseButton': true,
     // timer for temporary UI elements (ie. level start/complete fade)
     'timer': 3.0
 };
 
 // calls required update methods for UI elements
+// dt: delta time between ticks
 ui.update = function(dt) {
-    // timers for level start and complete events, including reset pause timer
-    if (game.levelStarted) {
-        this.pauseButton = false;
-        ui.timer > 0 ? ui.timer -= 1.5 * dt : (
-            game.levelStarted = false,
-            ui.timer = 3.0,
-            game.totalPauseTime = 0,
-            game.levelStartTime = Date.now()
-        );
-    } else if (player.won) {
-        this.pauseButton = false;
-        ui.timer > 0 ? ui.timer -= 1.5 * dt : (
-            player.won = false,
-            ui.timer = 3.0
-        );
-    } else if (!game.isGameOver) {
-        // restores pause button during gameplay
-        /* TODO: method to simplify 'player is ingame' checks */
-        this.pauseButton = true;
-    } else if (game.isGameOver) {
-        this.pauseButton = false;
+    // timed UI events
+    switch (game.state) {
+        case 'levelstart':
+            this.pleaseWait = true;
+            this.timer > 0 ? this.timer -= 1.5 * dt : (
+                this.pleaseWait = false,
+                this.timer = 3.0
+            );
+            break;
+        case 'levelcomplete':
+            this.pleaseWait = true;
+            this.timer > 0 ? this.timer -= 1.5 * dt : (
+                this.pleaseWait = false,
+                this.timer = 3.0
+            );
+            break;
     }
 };
 
-// renders applicable UI elements
+// checks game state and renders applicable UI elements
 ui.render = function() {
-    if (this.pauseButton) {
+    if (game.state === 'title' || (game.state === 'fakepause' &&
+        game.prevState === 'title')) {
+        this.renderTitle();
+    }
+    if (game.isPausable) {
         this.renderPauseButton();
     }
-    if (game.levelStarted) {
-        this.renderLevel(game.level);
+    if (game.state === 'levelstart' || (game.state === 'fakepause' &&
+        game.prevState === 'levelstart')) {
+        this.renderLvlStart(game.level);
     }
-    if (player.sprite && !player.won) {
+    if (player.sprite && !((game.state === 'levelcomplete' ||
+        game.state === 'nextlvlscreen' || game.state === 'title') ||
+        (game.state === 'fakepause' && (game.prevState === 'levelcomplete' ||
+        game.prevState === 'nextlvlscreen' || game.prevState === 'title')))) {
         this.renderLives();
     }
-    if (game.paused) {
+    if (game.state === 'paused') {
         this.renderPaused();
     }
-    if (player.won) {
-        this.renderLevelComplete();
+    if (game.state === 'levelcomplete' || (game.state === 'fakepause' &&
+        game.prevState === 'levelcomplete')) {
+        this.renderLvlComplete();
     }
-    if (game.isGameOver) {
-        this.renderGO();
+    if (game.state === 'nextlvlscreen' || (game.state === 'fakepause' &&
+        game.prevState === 'nextlvlscreen')) {
+        this.renderNextScreen();
     }
-    this.renderScore();
+    if (game.state === 'gameover' || (game.state === 'fakepause' &&
+        game.prevState === 'gameover')) {
+        this.renderGameOver();
+    }
+    if (game.state !== 'title' && !(game.state === 'fakepause' &&
+        game.prevState === 'title')) {
+        this.renderScore();
+    }
+};
+
+// display title screen
+/* TODO: proper title and nicer style */
+ui.renderTitle = function() {
+    ctx.font = 'bold 72px sans-serif';
+    ctx.fillText('Game Title', 505/2, 275);
+    ctx.strokeText('Game Title', 505/2, 275);
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.moveTo(505/2, 300);
+    ctx.bezierCurveTo((505/2)+50, 300, (505/2)+50, 350, 505/2, 350);
+    ctx.bezierCurveTo((505/2)-50, 350, (505/2)-50, 300, 505/2, 300);
+    ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo((505/2)-15, 315);
+    ctx.lineTo((505/2)+20, 325);
+    ctx.lineTo((505/2)-15, 335);
+    ctx.fill();
+    ctx.closePath();
+    ctx.font = 'bold 24px sans-serif';
+    ctx.lineWidth = 2;
+    ctx.fillText('(press the spacebar to begin)', 505/2, 565);
+    ctx.strokeText('(press the spacebar to begin)', 505/2, 565);
+    ctx.lineWidth = 3;
+    ctx.font = 'bold 60px sans-serif';
 };
 
 // display remaining lives
@@ -462,14 +548,23 @@ ui.renderLives = function() {
     }
 };
 
-// display player score
+// display player score, displays 'final' score if game over
 ui.renderScore = function() {
-    ctx.font = 'bold 32px sans-serif';
-    ctx.lineWidth = 2;
-    ctx.fillText(''+player.score, 505/2, 100);
-    ctx.strokeText(''+player.score, 505/2, 100);
-    ctx.font = 'bold 60px sans-serif'
-    ctx.lineWidth = 3;
+    game.state !== 'gameover' && game.prevState !== 'gameover' ? (
+        ctx.font = 'bold 32px sans-serif',
+        ctx.lineWidth = 2,
+        ctx.fillText(''+player.score, 505/2, 100),
+        ctx.strokeText(''+player.score, 505/2, 100),
+        ctx.font = 'bold 60px sans-serif',
+        ctx.lineWidth = 3
+    ) : (
+        ctx.font = 'bold 32px sans-serif',
+        ctx.lineWidth = 2,
+        ctx.fillText('Final Score: '+player.score, 505/2, 375),
+        ctx.strokeText('Final Score: '+player.score, 505/2, 375),
+        ctx.font = 'bold 60px sans-serif',
+        ctx.lineWidth = 3
+    );
 };
 
 // draw pause/resume button
@@ -480,7 +575,7 @@ ui.renderPauseButton = function() {
     ctx.fill();
     ctx.fillStyle = 'white';
     ctx.closePath;
-    game.paused ? (
+    game.state === 'paused' ? (
         ctx.beginPath(),
         ctx.moveTo(37, 80),
         ctx.lineTo(58, 90),
@@ -495,7 +590,8 @@ ui.renderPauseButton = function() {
 };
 
 // draws level start text
-ui.renderLevel = function(level) {
+// level: number of current level
+ui.renderLvlStart = function(level) {
     ctx.globalAlpha = ui.timer > 1.0 ? 1.0 : ui.timer + 0.1;
     ctx.fillText('Level ' + level, 505/2, 333);
     ctx.strokeText('Level ' + level, 505/2, 333);
@@ -503,11 +599,37 @@ ui.renderLevel = function(level) {
 };
 
 // draws level complete text
-ui.renderLevelComplete = function() {
+ui.renderLvlComplete = function() {
     ctx.globalAlpha = ui.timer > 1.0 ? 1.0 : ui.timer + 0.1;
     ctx.fillText('Level Complete!', 505/2, 333);
     ctx.strokeText('Level Complete!', 505/2, 333);
     ctx.globalAlpha = 1.0;
+};
+
+// draws next level continue screen
+ui.renderNextScreen = function() {
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.moveTo(505/2, 300);
+    ctx.bezierCurveTo((505/2)+50, 300, (505/2)+50, 350, 505/2, 350);
+    ctx.bezierCurveTo((505/2)-50, 350, (505/2)-50, 300, 505/2, 300);
+    ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo((505/2)-10, 330);
+    ctx.lineTo((505/2)+15, 338);
+    ctx.lineTo((505/2)-10, 346);
+    ctx.fill();
+    ctx.closePath();
+    ctx.font = 'bold italic 24px sans-serif';
+    ctx.fillText('Next', 505/2-2, 325);
+    ctx.font = 'bold 24px sans-serif';
+    ctx.lineWidth = 2;
+    ctx.fillText('(press the spacebar to continue)', 505/2, 565);
+    ctx.strokeText('(press the spacebar to continue)', 505/2, 565);
+    ctx.lineWidth = 3;
+    ctx.font = 'bold 60px sans-serif';
 };
 
 // draw pause screen
@@ -517,24 +639,31 @@ ui.renderPaused = function() {
 };
 
 // draw game over screen
-ui.renderGO = function() {
+ui.renderGameOver = function() {
     ctx.fillText('GAME OVER', 505/2, 333);
     ctx.strokeText('GAME OVER', 505/2, 333);
 };
 
 // handles mouse-interactive UI elements
 ui.handleClicks = function(e) {
+    var x = e.clientX;
+    var y = e.clientY;
     thisCanvas = document.getElementsByTagName('canvas')[0];
-    topBorder = thisCanvas.getBoundingClientRect().top;
-    leftBorder = thisCanvas.getBoundingClientRect().left;
+    tBorder = thisCanvas.getBoundingClientRect().top;
+    lBorder = thisCanvas.getBoundingClientRect().left;
 
     // clickable pause button
-    if (ui.pauseButton && e.clientX - leftBorder > 24 && e.clientX - leftBorder < 68 &&
-        e.clientY - topBorder > 68 && e.clientY - topBorder < 112) {
+    if (game.isPausable && x - lBorder > 24 && x - lBorder < 68 &&
+        y - tBorder > 68 && y - tBorder < 112) {
         game.togglePause();
     }
 
-    /* TODO: game start/next level buttons */
+    // clickable play/continue button
+    if ((game.state === 'title' || game.state === 'nextlvlscreen') &&
+        !this.pleaseWait && x - lBorder > (505/2 - 45) &&
+        x - lBorder < (505/2 + 45) && y - tBorder > 305 && y - tBorder < 345) {
+        player.ready = true;
+    }
 };
 
 
@@ -545,14 +674,14 @@ ui.handleClicks = function(e) {
 var game = {
     // current level
     'level': 1,
-    // level starting state
-    'levelStarted': true
+    // starting state
+    'state': 'title',
+    'totalPauseTime': 0.0
 };
 
 // initializes player and starts the game
 game.play = function() {
     player = new Player();
-    this.playLevel(this.level);
 };
 
 // object containing levels (enemies and powerups)
@@ -568,45 +697,70 @@ game.levels = {
     ]
 };
 
-// handles state changes
+// handles necessary calls for states and state changes
 game.update = function() {
-    // disables player movement when necessary
-    player.speedFactor = (this.levelStarted || player.won || this.isGameOver) ? 0 : 1;
-    if ((!player.won) && allEnemies.length === 0) {
-        var nextLevel = this.level + 1;
-        // load next level, or end the game if there isn't one
-        this.levels[nextLevel] instanceof Array ? (player.respawn(), this.playLevel(nextLevel)) :
-            this.gameOver();
+    var nextLevel = this.level + 1;
+    // ends game if player dies and has no lives left
+    if (!player.alive) {
+        player.lives ? player.respawn() : this.gameOver();
+    }
+
+    // check state and call appropriate methods
+    switch (this.state) {
+        case 'title':
+            if (player.ready) {
+                this.playLevel(this.level);
+            }
+            break;
+        case 'levelstart':
+            if (!ui.pleaseWait) {
+                this.setState('ingame');
+                this.totalPauseTime = 0;
+                player.ready = false;
+                this.levelStartTime = Date.now();
+            }
+            break;
+        case 'levelcomplete':
+            if (!ui.pleaseWait) {
+                // check if there is a next level
+                this.levels[nextLevel] instanceof Array ? this.setState('nextlvlscreen') : this.gameOver();
+            }
+            break;
+        case 'nextlvlscreen':
+            if (player.ready) {
+                player.respawn();
+                this.playLevel(nextLevel);
+            }
+            break;
+    }
+
+    // triggers level complete sequence
+    if (player.won) {
+        player.won = false;
+        this.levelComplete();
     }
 };
 
 // pause/unpause the game
 // if called with 'force' parameter, will set the pause state to value of 'force'
 game.togglePause = function(force) {
-    force = force || false;
-    if (force) {
-        this.paused = false;
-    }
-    this.paused ? (
-        globalSpeed = 1,
-        this.paused = false,
-        this.totalPauseTime = Date.now() - this.pauseStartTime
-    ) : (
-        globalSpeed = 0,
-        this.paused = true,
+    var pause = force ? true : (this.state === 'paused') ? false : true;
+
+    pause ? (
+        this.setState('paused'),
         this.pauseStartTime = Date.now()
+    ) : (
+        this.setState(this.prevState),
+        this.totalPauseTime += (Date.now() - this.pauseStartTime)
     );
 };
 
 // GAME OVER
 game.gameOver = function() {
-    if (player.won) {
-        player.won = false;
-    }
+    player.sprite = undefined;
     // move player out of win zone or win events will retrigger
     player.respawn();
-    player.sprite = undefined;
-    this.isGameOver = true;
+    this.setState('gameover');
 };
 
 // adds enemy to array of currently spawned enemies
@@ -616,20 +770,31 @@ game.spawnEnemy = function(enemy) {
     }
 };
 
-// load entities from level array and update level counter, then trigger game start
+// load entities from level array and update level counter, then trigger level start
 game.playLevel = function(level) {
     this.level = level;
     this.levels[level].forEach(function(entity) {
         if (entity instanceof Enemy) {
             game.spawnEnemy(entity);
         }
+        /* TODO: powerup spawning */
     });
-    this.levelStarted = true;
+    this.setState('levelstart');
 };
 
 // clear non-player entities in preparation for level change/game over
 game.levelComplete = function() {
     allEnemies.length = 0;
+    this.setState('levelcomplete');
+};
+
+// sets new game state and stores previous state as prevState
+// (for easily returning to last state)
+// auto sets flag for enabling/disabling player pause functionality
+game.setState = function(state) {
+    this.prevState = this.state;
+    this.state = state;
+    this.isPausable = (state === 'ingame' || state === 'paused') ? true : false;
 };
 
 
@@ -675,20 +840,21 @@ document.addEventListener('keyup', function(e) {
 // for clickable UI elements
 document.addEventListener("click", ui.handleClicks);
 
-// pause game on loss of focus or backed up calls will send enemies all over the place
+// pause game on loss of focus or backed up calls will send enemies
+// all over the place
 window.addEventListener('blur', function(){
     // no pause screen on special states (game over/level started/level complete)
-    if (!game.isGameOver && !game.levelStarted && !(allEnemies.length === 0)) {
+    if (game.isPausable) {
         game.togglePause(true);
     } else {
         // fake pause if lost focus during special state
-        globalSpeed = 0;
+        game.setState('fakepause');
     }
 });
 
 // undo fake pause on focus resume
 window.addEventListener('focus', function(){
-    if (!game.paused && globalSpeed === 0) {
-        globalSpeed = 1;
+    if (game.state === 'fakepause') {
+        game.setState(game.prevState);
     }
 });
