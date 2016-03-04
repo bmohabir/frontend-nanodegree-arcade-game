@@ -551,8 +551,8 @@ ui.renderTitle = function() {
     ctx.font = 'bold 24px sans-serif';
     ctx.lineWidth = 2;
     ctx.globalAlpha = this.timerB.value > 1.0 ? 1.0 : this.timerB.value + 0.1;
-    ctx.fillText('(press the spacebar to begin)', 505/2, 565);
-    ctx.strokeText('(press the spacebar to begin)', 505/2, 565);
+    ctx.fillText('(click play or press the spacebar)', 505/2, 565);
+    ctx.strokeText('(click play or press the spacebar)', 505/2, 565);
     ctx.globalAlpha = 1.0;
     ctx.lineWidth = 3;
     ctx.font = 'bold 60px sans-serif';
@@ -634,7 +634,7 @@ ui.renderLvlComplete = function() {
 
 // draws next level continue screen
 ui.renderNextScreen = function() {
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = 'blue';
     ctx.beginPath();
     ctx.moveTo(505/2, 300);
     ctx.bezierCurveTo((505/2)+50, 300, (505/2)+50, 350, 505/2, 350);
@@ -653,8 +653,8 @@ ui.renderNextScreen = function() {
     ctx.font = 'bold 24px sans-serif';
     ctx.lineWidth = 2;
     ctx.globalAlpha = this.timerB.value > 1.0 ? 1.0 : this.timerB.value + 0.1;
-    ctx.fillText('(press the spacebar to continue)', 505/2, 565);
-    ctx.strokeText('(press the spacebar to continue)', 505/2, 565);
+    ctx.fillText('(click Next or press the spacebar)', 505/2, 565);
+    ctx.strokeText('(click Next or press the spacebar)', 505/2, 565);
     ctx.globalAlpha = 1.0;
     ctx.lineWidth = 3;
     ctx.font = 'bold 60px sans-serif';
