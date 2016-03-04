@@ -297,7 +297,7 @@ Player.prototype.update = function(dt) {
             this.die();
         } else if (this.checkGraze(allEnemies[i])) {
             // player gains points for grazing enemy sprites
-            this.score += Math.round(150 * dt);
+            this.score += Math.round(200 * dt);
         }
     }
 
