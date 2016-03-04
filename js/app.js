@@ -712,20 +712,27 @@ game.play = function() {
 game.levels = {
     'title': {
         'enemies': [
-            [cols.a, rows.sm, 250, true], [cols.e, rows.sb, -350, false],
-            [cols.a, rows.st, 250, false], [cols.d, rows.st, 250, false]
+            [cols.a, rows.sm, 250, true], [cols.e, rows.sb, -350],
+            [cols.a, rows.st, 250], [cols.d, rows.st, 250]
         ]
     },
     '1': {
         'enemies': [
-            [cols.a, rows.sm, 100, false], [cols.d, rows.sb, 100, false],
-            [cols.c, rows.st, 100, false]
+            [cols.a, rows.sm, 100], [cols.d, rows.sb, 100],
+            [cols.c, rows.st, 100]
         ]
     },
     '2': {
         'enemies': [
-            [cols.a, rows.sm, 250, true], [cols.e, rows.sb, -350, false],
-            [cols.a, rows.st, 250, false], [cols.d, rows.st, 250, false]
+            [cols.a, rows.sm, 250, true], [cols.e, rows.sb, -350],
+            [cols.a, rows.st, 250], [cols.d, rows.st, 250]
+        ]
+    },
+    '3': {
+        'enemies': [
+            [cols.a, rows.st, 250], [cols.d, rows.st, 250],
+            [cols.b, rows.sm, -250], [cols.e, rows.sm, -250],
+            [cols.a, rows.sb, 250], [cols.d, rows.sb, 250]
         ]
     }
 };
