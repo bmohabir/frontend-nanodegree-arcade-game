@@ -609,12 +609,19 @@ game.gameOver = function() {
     this.isGameOver = true;
 };
 
+// adds enemy to array of currently spawned enemies
+game.spawnEnemy = function(enemy) {
+    if (enemy) {
+        allEnemies.push(enemy);
+    }
+};
+
 // load entities from level array and update level counter, then trigger game start
 game.playLevel = function(level) {
     this.level = level;
     this.levels[level].forEach(function(entity) {
         if (entity instanceof Enemy) {
-            allEnemies.push(entity);
+            game.spawnEnemy(entity);
         }
     });
     this.levelStarted = true;
