@@ -102,7 +102,7 @@ var Engine = (function(global) {
         player.update(dt);
         // added for UI and game states
         ui.update(dt);
-        game.update();
+        game.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call

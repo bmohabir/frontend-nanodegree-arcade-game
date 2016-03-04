@@ -694,7 +694,9 @@ var game = {
     // starting state
     'state': 'title',
     // holds total time in paused state, is reset each level by .update
-    'totalPauseTime': 0.0
+    'totalPauseTime': 0.0,
+    // timer used for game events
+    'timer': 5.0
 };
 
 // initializes player and starts the game
@@ -721,7 +723,8 @@ game.levels = {
 };
 
 // handles necessary calls for states and state changes
-game.update = function() {
+// dt: delta time between ticks
+game.update = function(dt) {
     var nextLevel = this.level + 1;
 
     // check state and call appropriate methods
