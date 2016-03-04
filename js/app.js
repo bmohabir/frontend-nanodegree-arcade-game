@@ -716,13 +716,13 @@ game.levels = {
             [cols.a, rows.st, 250, false], [cols.d, rows.st, 250, false]
         ]
     },
-    1: {
+    '1': {
         'enemies': [
             [cols.a, rows.sm, 100, false], [cols.d, rows.sb, 100, false],
             [cols.c, rows.st, 100, false]
         ]
     },
-    2: {
+    '2': {
         'enemies': [
             [cols.a, rows.sm, 250, true], [cols.e, rows.sb, -350, false],
             [cols.a, rows.st, 250, false], [cols.d, rows.st, 250, false]
