@@ -8,15 +8,10 @@
 
 /* global vars */
 
-// used by ui.handleClicks method
-var thisCanvas,
-    tBorder,
-    lBorder;
-
 // x and y coordinates for placing sprites on tiles (for convenience)
-// w = water
-// st/sm/sb = stone top/middle/bottom
-// gt/gb = grass top/bottom
+//     w = water
+//     st/sm/sb = stone top/middle/bottom
+//     gt/gb = grass top/bottom
 var rows = {
     'w': -6,
     'st': 62,
@@ -46,12 +41,11 @@ var allEnemies = [];
 /* Enemy class */
 
 // Constructor for enemies our player must avoid
-// posX: numerical horizontal spawn coordinate
-// posY: numerical vertical spawn coordinate
-// speed: numerical speed; positive moves left to right,
-//     negative moves right to left
-// onPatrol: if false, enemy travels offscreen and returns
-//     from opposite side; if true, enemy travels back and
+// posX: optional, numerical horizontal spawn coordinate (default: cols.a)
+// posY: optional, numerical vertical spawn coordinate (default: rows.sm)
+// speed: optional, numerical speed; positive moves left to right,
+//     negative moves right to left (default: 100)
+// onPatrol: optional; if true, enemy travels back and
 //     forth within visible level boundaries
 var Enemy = function(posX, posY, speed, onPatrol) {
     // ensure constructor is called with new keyword to keep vars in correct
@@ -157,7 +151,10 @@ Enemy.prototype.checkCollide = function (enemyOne, enemyTwo) {
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    // won't crash if enemy doesn't have a valid sprite
+    if (this.sprite) {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    }
 };
 
 
@@ -165,8 +162,8 @@ Enemy.prototype.render = function() {
 /* Player class */
 
 // Player constructor
-// lives: number of lives to start with
-// sprite: character to start with, accepts key names
+// lives: optional, number of lives to start with (default: 4)
+// sprite: optional, character to start with, accepts key names
 //     in .sprites object
 var Player = function(lives, sprite) {
     // sets position to default spawn coordinates
@@ -206,7 +203,7 @@ Player.prototype.sprites = {
 };
 
 // loads player sprite
-// aSprite: key name in .sprites object
+// aSprite: optional, key name in .sprites object
 // loads default sprite if aSprite does not have a valid value
 /* TODO: character selection */
 Player.prototype.getSprite = function(aSprite) {
@@ -287,7 +284,7 @@ Player.prototype.update = function(dt) {
             this.die();
         } else if (this.checkGraze(allEnemies[i])) {
             // player gains points for grazing enemy sprites
-            this.score += Math.round(100 * dt);
+            this.score += Math.round(150 * dt);
         }
     }
 
@@ -360,7 +357,6 @@ Player.prototype.win = function() {
 
 // renders player sprite to canvas, similar to enemy render method
 Player.prototype.render = function() {
-    // prevent error in cases where player should not be visible (ie. game over)
     if (this.sprite) {
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     }
@@ -645,12 +641,13 @@ ui.renderGameOver = function() {
 };
 
 // handles mouse-interactive UI elements
+// e: event passed from event listener
 ui.handleClicks = function(e) {
     var x = e.clientX;
     var y = e.clientY;
-    thisCanvas = document.getElementsByTagName('canvas')[0];
-    tBorder = thisCanvas.getBoundingClientRect().top;
-    lBorder = thisCanvas.getBoundingClientRect().left;
+    var thisCanvas = document.getElementsByTagName('canvas')[0];
+    var tBorder = thisCanvas.getBoundingClientRect().top;
+    var lBorder = thisCanvas.getBoundingClientRect().left;
 
     // clickable pause button
     if (game.isPausable && x - lBorder > 24 && x - lBorder < 68 &&
@@ -676,6 +673,7 @@ var game = {
     'level': 1,
     // starting state
     'state': 'title',
+    // holds total time in paused state, is reset each level by .update
     'totalPauseTime': 0.0
 };
 
@@ -685,7 +683,7 @@ game.play = function() {
 };
 
 // object containing levels (enemies and powerups)
-// each level is an array containing enemy and powerup objects to spawn and their parameters
+// each level is an array containing enemy and powerup objects to spawn
 game.levels = {
     1: [
         Enemy(cols.a, rows.sm, 100, false), Enemy(cols.d, rows.sb, 100, false),
@@ -700,6 +698,7 @@ game.levels = {
 // handles necessary calls for states and state changes
 game.update = function() {
     var nextLevel = this.level + 1;
+
     // ends game if player dies and has no lives left
     if (!player.alive) {
         player.lives ? player.respawn() : this.gameOver();
@@ -708,11 +707,13 @@ game.update = function() {
     // check state and call appropriate methods
     switch (this.state) {
         case 'title':
+            // wait for player ready
             if (player.ready) {
                 this.playLevel(this.level);
             }
             break;
         case 'levelstart':
+            // wait for ui animation
             if (!ui.pleaseWait) {
                 this.setState('ingame');
                 this.totalPauseTime = 0;
@@ -723,7 +724,9 @@ game.update = function() {
         case 'levelcomplete':
             if (!ui.pleaseWait) {
                 // check if there is a next level
-                this.levels[nextLevel] instanceof Array ? this.setState('nextlvlscreen') : this.gameOver();
+                this.levels[nextLevel] instanceof Array ?
+                    this.setState('nextlvlscreen') :
+                    this.gameOver();
             }
             break;
         case 'nextlvlscreen':
@@ -736,13 +739,14 @@ game.update = function() {
 
     // triggers level complete sequence
     if (player.won) {
+        // reset player state to prevent level complete loop
         player.won = false;
         this.levelComplete();
     }
 };
 
-// pause/unpause the game
-// if called with 'force' parameter, will set the pause state to value of 'force'
+// toggles game paused state
+// force: optional; pauses game if true
 game.togglePause = function(force) {
     var pause = force ? true : (this.state === 'paused') ? false : true;
 
@@ -764,13 +768,15 @@ game.gameOver = function() {
 };
 
 // adds enemy to array of currently spawned enemies
+// enemy: enemy object to spawn
 game.spawnEnemy = function(enemy) {
     if (enemy) {
         allEnemies.push(enemy);
     }
 };
 
-// load entities from level array and update level counter, then trigger level start
+// load entities from level array and update level, then set level start state
+// level: number of level to load
 game.playLevel = function(level) {
     this.level = level;
     this.levels[level].forEach(function(entity) {
@@ -782,15 +788,18 @@ game.playLevel = function(level) {
     this.setState('levelstart');
 };
 
-// clear non-player entities in preparation for level change/game over
+// clear non-player entities and set level complete state
 game.levelComplete = function() {
     allEnemies.length = 0;
     this.setState('levelcomplete');
 };
 
 // sets new game state and stores previous state as prevState
-// (for easily returning to last state)
-// auto sets flag for enabling/disabling player pause functionality
+// (for easily returning to last state, used with fakepause)
+// state: string, name of state to set
+// currently valid states: title, levelstart, ingame, paused, fakepause,
+//  levelcomplete, nextlvlscreen, gameover
+// sets flag to enable player pause functionality while ingame
 game.setState = function(state) {
     this.prevState = this.state;
     this.state = state;
@@ -812,6 +821,7 @@ game.play();
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 // tweaked for more precise controls and WASD
+// also pausing and ready confirmation
 var allowedKeys = {
     37: 'left',
     38: 'up',
@@ -840,10 +850,10 @@ document.addEventListener('keyup', function(e) {
 // for clickable UI elements
 document.addEventListener("click", ui.handleClicks);
 
-// pause game on loss of focus or backed up calls will send enemies
+// pause game on loss of focus or background up calls will send enemies
 // all over the place
 window.addEventListener('blur', function(){
-    // no pause screen on special states (game over/level started/level complete)
+    // pause if ingame, otherwise 'fakepause'
     if (game.isPausable) {
         game.togglePause(true);
     } else {
