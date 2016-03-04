@@ -705,21 +705,29 @@ game.play = function() {
 };
 
 // object containing levels (enemies and powerups)
-// each level is an array containing enemy and powerup objects to spawn
-// title level contains objects to spawn on title screen
+// each level is an object containing arrays for each type of entity
+// each labeled array contains an array for each entity containing the
+// constructor parameters for each entity
+// title level contains entities to spawn on title screen
 game.levels = {
-    'title': [
-        Enemy(cols.a, rows.sm, 250, true), Enemy(cols.e, rows.sb, -350, false),
-        Enemy(cols.a, rows.st, 250, false), Enemy(cols.d, rows.st, 250, false)
-    ],
-    1: [
-        Enemy(cols.a, rows.sm, 100, false), Enemy(cols.d, rows.sb, 100, false),
-        Enemy(cols.c, rows.st, 100, false)
-    ],
-    2: [
-        Enemy(cols.a, rows.sm, 250, true), Enemy(cols.e, rows.sb, -350, false),
-        Enemy(cols.a, rows.st, 250, false), Enemy(cols.d, rows.st, 250, false)
-    ]
+    'title': {
+        'enemies': [
+            [cols.a, rows.sm, 250, true], [cols.e, rows.sb, -350, false],
+            [cols.a, rows.st, 250, false], [cols.d, rows.st, 250, false]
+        ]
+    },
+    1: {
+        'enemies': [
+            [cols.a, rows.sm, 100, false], [cols.d, rows.sb, 100, false],
+            [cols.c, rows.st, 100, false]
+        ]
+    },
+    2: {
+        'enemies': [
+            [cols.a, rows.sm, 250, true], [cols.e, rows.sb, -350, false],
+            [cols.a, rows.st, 250, false], [cols.d, rows.st, 250, false]
+        ]
+    }
 };
 
 // handles necessary calls for states and state changes
@@ -732,10 +740,8 @@ game.update = function(dt) {
         case 'title':
             // spawn title screen entities
             if (!allEnemies.length){
-                this.levels.title.forEach(function(entity) {
-                    if (entity instanceof Enemy) {
-                        game.spawnEnemy(entity);
-                    }
+                this.levels.title.enemies.forEach(function(enemy) {
+                    game.spawnEnemy(enemy);
                 });
             }
             // wait for player ready
@@ -757,7 +763,7 @@ game.update = function(dt) {
         case 'levelcomplete':
             if (!ui.pleaseWait) {
                 // check if there is a next level
-                this.levels[nextLevel] instanceof Array ?
+                this.levels[nextLevel] instanceof Object ?
                     this.setState('nextlvlscreen') :
                     this.gameOver();
             }
@@ -801,7 +807,7 @@ game.togglePause = function(force) {
         this.setState('paused'),
         this.pauseStartTime = Date.now()
     ) : (
-        this.setState(this.prevState),
+        this.setState('ingame'),
         this.totalPauseTime += (Date.now() - this.pauseStartTime)
     );
 };
@@ -815,10 +821,10 @@ game.gameOver = function() {
 };
 
 // adds enemy to array of currently spawned enemies
-// enemy: enemy object to spawn
+// enemy: array containing parameters for Enemy constructor
 game.spawnEnemy = function(enemy) {
     if (enemy) {
-        allEnemies.push(enemy);
+        allEnemies.push(new Enemy(enemy[0], enemy[1], enemy[2], enemy[3]));
     }
 };
 
@@ -826,12 +832,10 @@ game.spawnEnemy = function(enemy) {
 // level: number of level to load
 game.playLevel = function(level) {
     this.level = level;
-    this.levels[level].forEach(function(entity) {
-        if (entity instanceof Enemy) {
-            game.spawnEnemy(entity);
-        }
-        /* TODO: powerup spawning */
+    this.levels[level].enemies.forEach(function(enemy) {
+        game.spawnEnemy(enemy);
     });
+    /* TODO: powerup spawning */
     this.setState('levelstart');
 };
 
