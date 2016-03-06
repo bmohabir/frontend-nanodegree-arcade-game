@@ -103,12 +103,10 @@ Enemy.prototype.update = function (dt) {
     }
 
     var enemies = allEnemies.length;
-    // store last known 'safe' position
-    var xBeforeCol = this.x;
+    var xBeforeCol = this.x; // store last known 'safe' position
     var i;
 
-    // move enemy to new position
-    this.x += this.getSpeed() * dt;
+    this.x += this.getSpeed() * dt; // move enemy to new position
 
     // check level boundary for wrap-around/collision
     if (this.onPatrol) {
@@ -184,11 +182,8 @@ var Player = function(lives, sprite) {
     this.xMove = 0;
     this.yMove = 0;
 
-    // stores shift key state
-    this.isShifting = false;
-
-    // for game start/next level
-    this.ready = false;
+    this.isShifting = false; // stores shift key state
+    this.ready = false; // for game start/next level
 };
 
 // reset player sprite, lives and score
@@ -293,15 +288,14 @@ Player.prototype.update = function(dt) {
 
     // check for enemy touch/graze
     for (i=0; i < numEnemies; i++) {
-        // stop checking for enemy touch if player is dead (or player will lose
-        // multiple lives when touching more than one enemy)
         if (!this.alive) {
+            // stop checking for enemy touch if player is dead (or player will
+            // lose multiple lives when touching more than one enemy)
             break;
         } else if (this.checkCollide(allEnemies[i])) {
             this.die();
         } else if (this.checkGraze(allEnemies[i])) {
-            // player gains points for grazing enemy sprites
-            this.score += Math.round(200 * dt);
+            this.score += Math.round(200 * dt); // player gains graze points
         }
     }
 
@@ -367,9 +361,7 @@ Player.prototype.win = function() {
         this.score += level * 100;
     }
 
-    // award points based on completion difficulty (level)
-    this.score += level * 100;
-
+    this.score += level * 100; // award completion points based on level
     this.won = true;
 };
 
@@ -398,8 +390,7 @@ Player.prototype.handleInput = function(key, step, isShifting) {
         return;
     }
 
-    // set player shifting state
-    this.isShifting = isShifting;
+    this.isShifting = isShifting; // set player shifting state
 
     if (step === 'down') {
         // get moving
@@ -452,7 +443,7 @@ Player.prototype.handleInput = function(key, step, isShifting) {
 
 // contains all user interface elements
 var ui = {
-    // timers for temporary UI elements (ie. level start/complete fade)
+    // timers for UI events (ie. fade text and level complete screen)
     'timer': 5.0,
     'sawTimer': {'value': 0.0, 'direction': 1}
 };
@@ -460,8 +451,8 @@ var ui = {
 // calls required update methods for UI elements
 // dt: delta time between ticks
 ui.update = function(dt) {
-    // timed UI events
     var stDelta;
+
     switch (game.state) {
         case 'levelstart':
             this.pleaseWait = true;
@@ -481,6 +472,7 @@ ui.update = function(dt) {
         case 'gameover':
             this.pleaseWait = true;
             stDelta = this.sawTimer.direction * dt;
+
             // prevent sawTimer overshoot or we might get stuck out of range
             if (this.sawTimer.value + (2.0 * stDelta) > 1.0) {
                 this.sawTimer.value = 1.0
@@ -500,6 +492,7 @@ ui.update = function(dt) {
         case 'title':
         case 'nextlvlscreen':
             stDelta = this.sawTimer.direction * dt;
+
             if (this.sawTimer.value + (1.5 * stDelta) > 1.0) {
                 this.sawTimer.value = 1.0
             } else if (this.sawTimer.value + (1.5 * stDelta) < 0.0) {
@@ -558,18 +551,17 @@ ui.render = function() {
 };
 
 // display title screen
-/* TODO: proper title and nicer style */
 ui.renderTitle = function() {
+    // title
     ctx.font = '900 72px sans-serif';
     ctx.lineWidth = 3;
     ctx.strokeStyle = 'red';
-
     ctx.fillText('Beetle Run', 505/2, 280);
     ctx.strokeText('Beetle Run', 505/2, 280);
-
     ctx.strokeStyle = 'black';
-    ctx.fillStyle = 'red';
 
+    // play button background
+    ctx.fillStyle = 'red';
     ctx.beginPath();
     ctx.moveTo(505/2, 310);
     ctx.bezierCurveTo((505/2)+50, 310, (505/2)+50, 360, 505/2, 360);
@@ -577,6 +569,7 @@ ui.renderTitle = function() {
     ctx.fill();
     ctx.closePath();
 
+    // play button icon
     ctx.fillStyle = 'white';
     ctx.beginPath();
     ctx.moveTo((505/2)-15, 325);
@@ -585,14 +578,13 @@ ui.renderTitle = function() {
     ctx.fill();
     ctx.closePath();
 
+    // start play instructions
     ctx.font = 'bold 26px cursive';
     ctx.lineWidth = 1.5;
     ctx.globalAlpha = this.sawTimer.value > 1.0 ?
         1.0 : this.sawTimer.value + 0.1;
-
     ctx.fillText('(click play or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click play or press the spacebar)', 505/2, 565);
-
     ctx.globalAlpha = 1.0;
 };
 
@@ -617,21 +609,23 @@ ui.renderScore = function() {
     ctx.lineWidth = 1.5;
 
     if (game.state !== 'gameover' && game.prevState !== 'gameover') {
+        // ingame score
         ctx.font = '900 30px cursive';
         ctx.fillText(''+player.score, 505/2, 100);
         ctx.strokeText(''+player.score, 505/2, 100);
     } else {
+        // endgame score
         ctx.font = '800 32px sans-serif';
         ctx.fillText('Final Score: '+player.score, 505/2, 330);
         ctx.strokeText('Final Score: '+player.score, 505/2, 330);
+
+        // new high score
         if (player.score > game.highScore) {
             ctx.fillStyle = 'yellow';
             ctx.globalAlpha = this.sawTimer.value >= 0.5 ? 1.0 : 0;
-
-            ctx.font = '900 36px monospace';
-            ctx.fillText('New High Score!', 505/2, 365);
-            ctx.strokeText('New High Score!', 505/2, 365);
-
+            ctx.font = '900 38px monospace';
+            ctx.fillText('New High Score!', 255, 365);
+            ctx.strokeText('New High Score!', 255, 365);
             ctx.globalAlpha = 1.0;
             ctx.fillStyle = 'white';
         }
@@ -642,23 +636,22 @@ ui.renderScore = function() {
 ui.renderHighScore = function() {
     ctx.font = '800 30px sans-serif';
     ctx.lineWidth = 1.8;
-
     ctx.fillText('High Score:  '+game.highScore, 505/2, 100);
     ctx.strokeText('High Score:  '+game.highScore, 505/2, 100);
 };
 
 // draw pause/resume button
 ui.renderPauseButton = function() {
+    // pause button background
     ctx.fillStyle = 'red';
-
     ctx.beginPath();
     ctx.arc(46, 90, 22, 0, 2*Math.PI);
     ctx.fill();
     ctx.closePath();
-
     ctx.fillStyle = 'white';
 
     game.state === 'paused' ? (
+        // pause icon
         ctx.beginPath(),
         ctx.moveTo(37, 80),
         ctx.lineTo(58, 90),
@@ -666,23 +659,23 @@ ui.renderPauseButton = function() {
         ctx.fill(),
         ctx.closePath()
     ) : (
+        // play icon
         ctx.font = 'bolder 28px fantasy',
         ctx.fillText("I I", 45, 102)
     );
 };
 
 // draws level start text
-// level: number of current level
+// level: number of level to introduce
 ui.renderLvlStart = function(level) {
     ctx.font = '900 60px cursive';
     ctx.lineWidth = 2;
     ctx.globalAlpha = this.timer > 1.0 ? 1.0 : this.timer + 0.1;
-
     ctx.fillText('Level ' + level, 505/2, 280);
     ctx.strokeText('Level ' + level, 505/2, 280);
-
     ctx.globalAlpha = 1.0;
 
+    // ready...go text
     if (this.timer < 3.0) {
         this.timer > 0.5 ? (
             ctx.font = '800 42px sans-serif',
@@ -701,17 +694,15 @@ ui.renderLvlComplete = function() {
     ctx.font = '800 50px cursive';
     ctx.lineWidth = 2;
     ctx.globalAlpha = this.timer > 1.0 ? 1.0 : this.timer + 0.1;
-
     ctx.fillText('Level Complete!', 505/2, 333);
     ctx.strokeText('Level Complete!', 505/2, 333);
-
     ctx.globalAlpha = 1.0;
 };
 
 // draws next level continue screen
 ui.renderNextScreen = function() {
+    // next button background
     ctx.fillStyle = 'blue';
-
     ctx.beginPath();
     ctx.moveTo(505/2, 310);
     ctx.bezierCurveTo((505/2)+50, 310, (505/2)+50, 360, 505/2, 360);
@@ -719,8 +710,8 @@ ui.renderNextScreen = function() {
     ctx.fill();
     ctx.closePath();
 
+    // play icon
     ctx.fillStyle = 'white';
-
     ctx.beginPath();
     ctx.moveTo((505/2)-10, 340);
     ctx.lineTo((505/2)+15, 348);
@@ -728,18 +719,17 @@ ui.renderNextScreen = function() {
     ctx.fill();
     ctx.closePath();
 
+    // next text
     ctx.font = 'bold italic 24px sans-serif';
-
     ctx.fillText('Next', 505/2-2, 335);
 
+    // next level instruction
     ctx.font = 'bold 26px cursive';
     ctx.lineWidth = 1.5;
     ctx.globalAlpha = this.sawTimer.value > 1.0 ?
         1.0 : this.sawTimer.value + 0.1;
-
     ctx.fillText('(click Next or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click Next or press the spacebar)', 505/2, 565);
-
     ctx.globalAlpha = 1.0;
 };
 
@@ -747,7 +737,6 @@ ui.renderNextScreen = function() {
 ui.renderPaused = function() {
     ctx.font = '800 60px cursive';
     ctx.lineWidth = 2;
-
     ctx.fillText('PAUSED', 505/2, 333);
     ctx.strokeText('PAUSED', 505/2, 333);
 };
@@ -756,7 +745,6 @@ ui.renderPaused = function() {
 ui.renderGameOver = function() {
     ctx.lineWidth = 2;
     ctx.font = '900 60px sans-serif';
-
     ctx.fillText('GAME OVER', 505/2, 280);
     ctx.strokeText('GAME OVER', 505/2, 280);
 };
@@ -790,16 +778,11 @@ ui.handleClicks = function(e) {
 
 // contains gameplay and level code
 var game = {
-    // current level
-    'level': 1,
-    // starting state
-    'state': 'title',
-    // holds total time in paused state, is reset each level by .update
-    'totalPauseTime': 0.0,
-    // timer used for game events
-    'timer': 5.0,
-    // stores high scores
-    'highScore': 0
+    'level': 1, // holds current level
+    'state': 'title', // holds current state
+    'totalPauseTime': 0.0, // total time in paused state (reset per level)
+    'timer': 5.0, // timer used for game events
+    'highScore': 0 // stores high scores
 };
 
 // initializes player and starts the game
@@ -845,7 +828,6 @@ game.levels = {
 game.update = function(dt) {
     var nextLevel = this.level + 1;
 
-    // check state and call appropriate methods
     switch (this.state) {
         case 'title':
             // spawn title screen entities
@@ -856,13 +838,12 @@ game.update = function(dt) {
             }
             // wait for player ready
             if (player.ready) {
-                // clear title screen enemies
-                allEnemies.length = 0;
+                allEnemies.length = 0; // clear title screen enemies
                 this.playLevel(this.level);
             }
             break;
         case 'levelstart':
-            // wait for ui animation
+            // wait for ui animation before proceeding
             if (!ui.pleaseWait) {
                 this.setState('ingame');
                 this.totalPauseTime = 0;
@@ -927,8 +908,6 @@ game.togglePause = function(force) {
 // GAME OVER
 game.gameOver = function() {
     player.sprite = undefined;
-    // move player out of win zone or win events will retrigger
-    player.respawn();
     this.setState('gameover');
 };
 
