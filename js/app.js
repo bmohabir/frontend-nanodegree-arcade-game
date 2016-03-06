@@ -481,12 +481,12 @@ ui.update = function(dt) {
         case 'gameover':
             this.pleaseWait = true;
             // prevent sawTimer overshoot or we might get stuck out of range
-            if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) > 1.0) {
+            if (this.sawTimer.value + (2.0 * this.sawTimer.direction * dt) > 1.0) {
                 this.sawTimer.value = 1.0
-            } else if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) < 0.0) {
+            } else if (this.sawTimer.value + (2.0 * this.sawTimer.direction * dt) < 0.0) {
                 this.sawTimer.value = 0.0
             } else {
-                this.sawTimer.value += 1.5 * this.sawTimer.direction * dt;
+                this.sawTimer.value += 2.0 * this.sawTimer.direction * dt;
             }
             if (this.sawTimer.value === 1.0 || this.sawTimer.value === 0.0) {
                 this.sawTimer.direction *= -1;
@@ -498,12 +498,12 @@ ui.update = function(dt) {
             break;
         case 'title':
         case 'nextlvlscreen':
-            if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) > 1.0) {
+            if (this.sawTimer.value + (this.sawTimer.direction * dt) > 1.0) {
                 this.sawTimer.value = 1.0
-            } else if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) < 0.0) {
+            } else if (this.sawTimer.value + (this.sawTimer.direction * dt) < 0.0) {
                 this.sawTimer.value = 0.0
             } else {
-                this.sawTimer.value += 1.5 * this.sawTimer.direction * dt;
+                this.sawTimer.value += this.sawTimer.direction * dt;
             }
             if (this.sawTimer.value >= 1.0 || this.sawTimer.value <= 0.0) {
                 this.sawTimer.direction *= -1;
