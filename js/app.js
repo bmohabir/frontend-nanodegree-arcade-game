@@ -293,12 +293,11 @@ Player.prototype.update = function(dt) {
 
     // check for enemy touch/graze
     for (i=0; i < numEnemies; i++) {
-        // stop checking for enemy touch if player is dead (or player will lose multiple lives for simultaneously
-        // touching multiple enemies)
+        // stop checking for enemy touch if player is dead (or player will lose
+        // multiple lives when touching more than one enemy)
         if (!this.alive) {
             break;
-        }
-        if (this.checkCollide(allEnemies[i])) {
+        } else if (this.checkCollide(allEnemies[i])) {
             this.die();
         } else if (this.checkGraze(allEnemies[i])) {
             // player gains points for grazing enemy sprites
@@ -462,6 +461,7 @@ var ui = {
 // dt: delta time between ticks
 ui.update = function(dt) {
     // timed UI events
+    var stDelta;
     switch (game.state) {
         case 'levelstart':
             this.pleaseWait = true;
@@ -480,13 +480,14 @@ ui.update = function(dt) {
             break;
         case 'gameover':
             this.pleaseWait = true;
+            stDelta = this.sawTimer.direction * dt;
             // prevent sawTimer overshoot or we might get stuck out of range
-            if (this.sawTimer.value + (2.0 * this.sawTimer.direction * dt) > 1.0) {
+            if (this.sawTimer.value + (2.0 * stDelta) > 1.0) {
                 this.sawTimer.value = 1.0
-            } else if (this.sawTimer.value + (2.0 * this.sawTimer.direction * dt) < 0.0) {
+            } else if (this.sawTimer.value + (2.0 * stDelta) < 0.0) {
                 this.sawTimer.value = 0.0
             } else {
-                this.sawTimer.value += 2.0 * this.sawTimer.direction * dt;
+                this.sawTimer.value += 2.0 * stDelta;
             }
             if (this.sawTimer.value === 1.0 || this.sawTimer.value === 0.0) {
                 this.sawTimer.direction *= -1;
@@ -498,12 +499,13 @@ ui.update = function(dt) {
             break;
         case 'title':
         case 'nextlvlscreen':
-            if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) > 1.0) {
+            stDelta = this.sawTimer.direction * dt;
+            if (this.sawTimer.value + (1.5 * stDelta) > 1.0) {
                 this.sawTimer.value = 1.0
-            } else if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) < 0.0) {
+            } else if (this.sawTimer.value + (1.5 * stDelta) < 0.0) {
                 this.sawTimer.value = 0.0
             } else {
-                this.sawTimer.value += 1.5 * this.sawTimer.direction * dt;
+                this.sawTimer.value += 1.5 * stDelta;
             }
             if (this.sawTimer.value >= 1.0 || this.sawTimer.value <= 0.0) {
                 this.sawTimer.direction *= -1;
@@ -585,7 +587,8 @@ ui.renderTitle = function() {
 
     ctx.font = 'bold 26px cursive';
     ctx.lineWidth = 1.5;
-    ctx.globalAlpha = this.sawTimer.value > 1.0 ? 1.0 : this.sawTimer.value + 0.1;
+    ctx.globalAlpha = this.sawTimer.value > 1.0 ?
+        1.0 : this.sawTimer.value + 0.1;
 
     ctx.fillText('(click play or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click play or press the spacebar)', 505/2, 565);
@@ -731,7 +734,8 @@ ui.renderNextScreen = function() {
 
     ctx.font = 'bold 26px cursive';
     ctx.lineWidth = 1.5;
-    ctx.globalAlpha = this.sawTimer.value > 1.0 ? 1.0 : this.sawTimer.value + 0.1;
+    ctx.globalAlpha = this.sawTimer.value > 1.0 ?
+        1.0 : this.sawTimer.value + 0.1;
 
     ctx.fillText('(click Next or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click Next or press the spacebar)', 505/2, 565);
