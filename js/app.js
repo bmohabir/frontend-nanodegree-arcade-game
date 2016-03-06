@@ -309,7 +309,7 @@ Player.prototype.update = function(dt) {
 // enemy: enemy object to check for collision with
 Player.prototype.checkCollide = function(enemy) {
     return (((enemy.y > this.y && enemy.y - this.y <= 60) ||
-        (this.y > enemy.y && this.y - enemy.y <= 48)) &&
+        (this.y > enemy.y && this.y - enemy.y <= 50)) &&
         Math.abs(enemy.x - this.x) <= 64);
 };
 
