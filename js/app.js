@@ -454,7 +454,7 @@ Player.prototype.handleInput = function(key, step, isShifting) {
 var ui = {
     // timers for temporary UI elements (ie. level start/complete fade)
     'timer': 5.0,
-    'timerB': {'value': 0.0, 'direction': 1}
+    'sawTimer': {'value': 0.0, 'direction': 1}
 };
 
 // calls required update methods for UI elements
@@ -467,7 +467,7 @@ ui.update = function(dt) {
             this.timer > 0 ? this.timer -= 1.5 * dt : (
                 this.pleaseWait = false,
                 this.timer = 5.0,
-                this.timerB.value = 0.0
+                this.sawTimer.value = 0.0
             );
             break;
         case 'levelcomplete':
@@ -479,9 +479,16 @@ ui.update = function(dt) {
             break;
         case 'gameover':
             this.pleaseWait = true;
-            this.timerB.value += 2 * this.timerB.direction * dt;
-            if (this.timerB.value >= 1.0 || this.timerB.value <= 0.0) {
-                this.timerB.direction *= -1;
+            // prevent sawTimer overshoot or we might get stuck out of range
+            if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) > 1.0) {
+                this.sawTimer.value = 1.0
+            } else if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) < 0.0) {
+                this.sawTimer.value = 0.0
+            } else {
+                this.sawTimer.value += 1.5 * this.sawTimer.direction * dt;
+            }
+            if (this.sawTimer.value === 1.0 || this.sawTimer.value === 0.0) {
+                this.sawTimer.direction *= -1;
             }
             this.timer > 0 ? this.timer -= dt : (
                 this.pleaseWait = false,
@@ -490,9 +497,15 @@ ui.update = function(dt) {
             break;
         case 'title':
         case 'nextlvlscreen':
-            this.timerB.value += 1.5 * this.timerB.direction * dt;
-            if (this.timerB.value >= 1.0 || this.timerB.value <= 0.0) {
-                this.timerB.direction *= -1;
+            if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) > 1.0) {
+                this.sawTimer.value = 1.0
+            } else if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) < 0.0) {
+                this.sawTimer.value = 0.0
+            } else {
+                this.sawTimer.value += 1.5 * this.sawTimer.direction * dt;
+            }
+            if (this.sawTimer.value >= 1.0 || this.sawTimer.value <= 0.0) {
+                this.sawTimer.direction *= -1;
             }
             break;
     }
@@ -563,7 +576,7 @@ ui.renderTitle = function() {
     ctx.closePath();
     ctx.font = 'bold 26px sans-serif';
     ctx.lineWidth = 1.5;
-    ctx.globalAlpha = this.timerB.value > 1.0 ? 1.0 : this.timerB.value + 0.1;
+    ctx.globalAlpha = this.sawTimer.value > 1.0 ? 1.0 : this.sawTimer.value + 0.1;
     ctx.fillText('(click play or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click play or press the spacebar)', 505/2, 565);
     ctx.globalAlpha = 1.0;
@@ -599,7 +612,7 @@ ui.renderScore = function() {
         ctx.strokeText('Final Score: '+player.score, 505/2, 330);
         if (player.score > game.highScore) {
             ctx.fillStyle = 'yellow';
-            ctx.globalAlpha = this.timerB.value > 0.5 ? 1.0 : 0;
+            ctx.globalAlpha = this.sawTimer.value >= 0.5 ? 1.0 : 0;
             ctx.fillText('New High Score!', 505/2, 365);
             ctx.strokeText('New High Score!', 505/2, 365);
             ctx.globalAlpha = 1.0;
@@ -692,7 +705,7 @@ ui.renderNextScreen = function() {
     ctx.fillText('Next', 505/2-2, 335);
     ctx.font = 'bold 26px sans-serif';
     ctx.lineWidth = 1.5;
-    ctx.globalAlpha = this.timerB.value > 1.0 ? 1.0 : this.timerB.value + 0.1;
+    ctx.globalAlpha = this.sawTimer.value > 1.0 ? 1.0 : this.sawTimer.value + 0.1;
     ctx.fillText('(click Next or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click Next or press the spacebar)', 505/2, 565);
     ctx.globalAlpha = 1.0;
