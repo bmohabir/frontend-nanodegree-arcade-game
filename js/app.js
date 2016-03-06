@@ -908,6 +908,10 @@ var allowedKeys = {
 
 // use keydown for faster response and hold
 document.addEventListener('keydown', function(e) {
+    // prevent arrows and space key scrolling page
+    if (allowedKeys[e.keyCode]) {
+        e.preventDefault();
+    }
     e.shiftKey ? player.handleInput(allowedKeys[e.keyCode], 'down', true) :
         player.handleInput(allowedKeys[e.keyCode], 'down', false);
 });
