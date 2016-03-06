@@ -558,16 +558,23 @@ ui.render = function() {
 // display title screen
 /* TODO: proper title and nicer style */
 ui.renderTitle = function() {
-    ctx.font = 'bold 72px "Arial Black"';
-    ctx.fillText('Bug Run', 505/2, 280);
-    ctx.strokeText('Bug Run', 505/2, 280);
+    ctx.font = '900 72px sans-serif';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'red';
+
+    ctx.fillText('Beetle Run', 505/2, 280);
+    ctx.strokeText('Beetle Run', 505/2, 280);
+
+    ctx.strokeStyle = 'black';
     ctx.fillStyle = 'red';
+
     ctx.beginPath();
     ctx.moveTo(505/2, 310);
     ctx.bezierCurveTo((505/2)+50, 310, (505/2)+50, 360, 505/2, 360);
     ctx.bezierCurveTo((505/2)-50, 360, (505/2)-50, 310, 505/2, 310);
     ctx.fill();
     ctx.closePath();
+
     ctx.fillStyle = 'white';
     ctx.beginPath();
     ctx.moveTo((505/2)-15, 325);
@@ -575,14 +582,15 @@ ui.renderTitle = function() {
     ctx.lineTo((505/2)-15, 345);
     ctx.fill();
     ctx.closePath();
-    ctx.font = 'bold 26px sans-serif';
+
+    ctx.font = 'bold 26px cursive';
     ctx.lineWidth = 1.5;
     ctx.globalAlpha = this.sawTimer.value > 1.0 ? 1.0 : this.sawTimer.value + 0.1;
+
     ctx.fillText('(click play or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click play or press the spacebar)', 505/2, 565);
+
     ctx.globalAlpha = 1.0;
-    ctx.lineWidth = 3;
-    ctx.font = 'bold 60px sans-serif';
 };
 
 // display remaining lives
@@ -603,45 +611,50 @@ ui.renderLives = function() {
 
 // display player score, displays 'final' score if game over
 ui.renderScore = function() {
-    ctx.font = 'bold 32px sans-serif';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
+
     if (game.state !== 'gameover' && game.prevState !== 'gameover') {
+        ctx.font = '900 30px cursive';
         ctx.fillText(''+player.score, 505/2, 100);
         ctx.strokeText(''+player.score, 505/2, 100);
     } else {
+        ctx.font = '800 32px sans-serif';
         ctx.fillText('Final Score: '+player.score, 505/2, 330);
         ctx.strokeText('Final Score: '+player.score, 505/2, 330);
         if (player.score > game.highScore) {
             ctx.fillStyle = 'yellow';
             ctx.globalAlpha = this.sawTimer.value >= 0.5 ? 1.0 : 0;
+
+            ctx.font = '900 36px monospace';
             ctx.fillText('New High Score!', 505/2, 365);
             ctx.strokeText('New High Score!', 505/2, 365);
+
             ctx.globalAlpha = 1.0;
             ctx.fillStyle = 'white';
         }
     }
-    ctx.font = 'bold 60px sans-serif';
-    ctx.lineWidth = 3;
 };
 
 // displays current high score
 ui.renderHighScore = function() {
-    ctx.font = 'bold 30px sans-serif';
-    ctx.lineWidth = 2;
-    ctx.fillText('High Score: '+game.highScore, 505/2, 100);
-    ctx.strokeText('High Score: '+game.highScore, 505/2, 100);
-    ctx.font = 'bold 60px sans-serif';
-    ctx.lineWidth = 3;
+    ctx.font = '800 30px sans-serif';
+    ctx.lineWidth = 1.8;
+
+    ctx.fillText('High Score:  '+game.highScore, 505/2, 100);
+    ctx.strokeText('High Score:  '+game.highScore, 505/2, 100);
 };
 
 // draw pause/resume button
 ui.renderPauseButton = function() {
-    ctx.beginPath();
     ctx.fillStyle = 'red';
+
+    ctx.beginPath();
     ctx.arc(46, 90, 22, 0, 2*Math.PI);
     ctx.fill();
+    ctx.closePath();
+
     ctx.fillStyle = 'white';
-    ctx.closePath;
+
     game.state === 'paused' ? (
         ctx.beginPath(),
         ctx.moveTo(37, 80),
@@ -650,78 +663,96 @@ ui.renderPauseButton = function() {
         ctx.fill(),
         ctx.closePath()
     ) : (
-        ctx.font = 'bold 28px Impact',
-        ctx.fillText("I I", 45, 102),
-        ctx.font = 'bold 60px sans-serif'
+        ctx.font = 'bolder 28px fantasy',
+        ctx.fillText("I I", 45, 102)
     );
 };
 
 // draws level start text
 // level: number of current level
 ui.renderLvlStart = function(level) {
+    ctx.font = '900 60px cursive';
+    ctx.lineWidth = 2;
     ctx.globalAlpha = this.timer > 1.0 ? 1.0 : this.timer + 0.1;
+
     ctx.fillText('Level ' + level, 505/2, 280);
     ctx.strokeText('Level ' + level, 505/2, 280);
+
     ctx.globalAlpha = 1.0;
-    ctx.font = 'bold 36px sans-serif';
-    ctx.lineWidth = 2;
+
     if (this.timer < 3.0) {
         this.timer > 0.5 ? (
+            ctx.font = '800 42px sans-serif',
             ctx.fillText('Ready...', 505/2, 333),
             ctx.strokeText('Ready...', 505/2, 333)
         ) : (
-            ctx.fillText('Go!', 505/2, 333),
-            ctx.strokeText('Go!', 505/2, 333)
+            ctx.font = '900 46px sans-serif',
+            ctx.fillText('GO!', 505/2, 329),
+            ctx.strokeText('GO!', 505/2, 329)
         );
     }
-    ctx.font = 'bold 60px sans-serif';
-    ctx.lineWidth = 3;
 };
 
 // draws level complete text
 ui.renderLvlComplete = function() {
+    ctx.font = '800 50px cursive';
+    ctx.lineWidth = 2;
     ctx.globalAlpha = this.timer > 1.0 ? 1.0 : this.timer + 0.1;
+
     ctx.fillText('Level Complete!', 505/2, 333);
     ctx.strokeText('Level Complete!', 505/2, 333);
+
     ctx.globalAlpha = 1.0;
 };
 
 // draws next level continue screen
 ui.renderNextScreen = function() {
     ctx.fillStyle = 'blue';
+
     ctx.beginPath();
     ctx.moveTo(505/2, 310);
     ctx.bezierCurveTo((505/2)+50, 310, (505/2)+50, 360, 505/2, 360);
     ctx.bezierCurveTo((505/2)-50, 360, (505/2)-50, 310, 505/2, 310);
     ctx.fill();
     ctx.closePath();
+
     ctx.fillStyle = 'white';
+
     ctx.beginPath();
     ctx.moveTo((505/2)-10, 340);
     ctx.lineTo((505/2)+15, 348);
     ctx.lineTo((505/2)-10, 356);
     ctx.fill();
     ctx.closePath();
+
     ctx.font = 'bold italic 24px sans-serif';
+
     ctx.fillText('Next', 505/2-2, 335);
-    ctx.font = 'bold 26px sans-serif';
+
+    ctx.font = 'bold 26px cursive';
     ctx.lineWidth = 1.5;
     ctx.globalAlpha = this.sawTimer.value > 1.0 ? 1.0 : this.sawTimer.value + 0.1;
+
     ctx.fillText('(click Next or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click Next or press the spacebar)', 505/2, 565);
+
     ctx.globalAlpha = 1.0;
-    ctx.lineWidth = 3;
-    ctx.font = 'bold 60px sans-serif';
 };
 
 // draw pause screen
 ui.renderPaused = function() {
+    ctx.font = '800 60px cursive';
+    ctx.lineWidth = 2;
+
     ctx.fillText('PAUSED', 505/2, 333);
     ctx.strokeText('PAUSED', 505/2, 333);
 };
 
 // draw game over screen
 ui.renderGameOver = function() {
+    ctx.lineWidth = 2;
+    ctx.font = '900 60px sans-serif';
+
     ctx.fillText('GAME OVER', 505/2, 280);
     ctx.strokeText('GAME OVER', 505/2, 280);
 };
