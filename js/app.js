@@ -334,6 +334,7 @@ Player.prototype.respawn = function() {
     this.y = this.startPos.y;
     this.xMove = 0;
     this.yMove = 0;
+    this.won = false;
     this.alive = true;
     this.ready = false;
 };
@@ -860,18 +861,17 @@ game.update = function(dt) {
                 this.setState('title');
             }
             break;
-    }
+        case 'ingame':
+            // triggers level complete sequence
+            if (player.won) {
+                this.levelComplete();
+            }
 
-    // triggers level complete sequence
-    if (player.won) {
-        // reset player state to prevent level complete loop
-        player.won = false;
-        this.levelComplete();
-    }
-
-    // ends game if player dies and has no lives left
-    if (!player.alive) {
-        player.lives > 0 ? player.respawn() : this.gameOver();
+            // ends game if player dies and has no lives left
+            if (!player.alive) {
+                player.lives > 0 ? player.respawn() : this.gameOver();
+            }
+            break;
     }
 };
 
