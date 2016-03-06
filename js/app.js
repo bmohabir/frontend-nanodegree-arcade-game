@@ -498,12 +498,12 @@ ui.update = function(dt) {
             break;
         case 'title':
         case 'nextlvlscreen':
-            if (this.sawTimer.value + (this.sawTimer.direction * dt) > 1.0) {
+            if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) > 1.0) {
                 this.sawTimer.value = 1.0
-            } else if (this.sawTimer.value + (this.sawTimer.direction * dt) < 0.0) {
+            } else if (this.sawTimer.value + (1.5 * this.sawTimer.direction * dt) < 0.0) {
                 this.sawTimer.value = 0.0
             } else {
-                this.sawTimer.value += this.sawTimer.direction * dt;
+                this.sawTimer.value += 1.5 * this.sawTimer.direction * dt;
             }
             if (this.sawTimer.value >= 1.0 || this.sawTimer.value <= 0.0) {
                 this.sawTimer.direction *= -1;
@@ -558,9 +558,9 @@ ui.render = function() {
 // display title screen
 /* TODO: proper title and nicer style */
 ui.renderTitle = function() {
-    ctx.font = 'bold 72px sans-serif';
-    ctx.fillText('Game Title', 505/2, 280);
-    ctx.strokeText('Game Title', 505/2, 280);
+    ctx.font = 'bold 72px "Arial Black"';
+    ctx.fillText('Bug Rush', 505/2, 280);
+    ctx.strokeText('Bug Rush', 505/2, 280);
     ctx.fillStyle = 'red';
     ctx.beginPath();
     ctx.moveTo(505/2, 310);
