@@ -559,8 +559,8 @@ ui.render = function() {
 /* TODO: proper title and nicer style */
 ui.renderTitle = function() {
     ctx.font = 'bold 72px "Arial Black"';
-    ctx.fillText('Bug Rush', 505/2, 280);
-    ctx.strokeText('Bug Rush', 505/2, 280);
+    ctx.fillText('Bug Run', 505/2, 280);
+    ctx.strokeText('Bug Run', 505/2, 280);
     ctx.fillStyle = 'red';
     ctx.beginPath();
     ctx.moveTo(505/2, 310);
