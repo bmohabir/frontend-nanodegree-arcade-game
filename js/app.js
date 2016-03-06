@@ -453,8 +453,8 @@ Player.prototype.handleInput = function(key, step, isShifting) {
 // contains all user interface elements
 var ui = {
     // timers for temporary UI elements (ie. level start/complete fade)
-    'timer': 3.0,
-    'timerB': {'value': 0.5, 'direction': 1}
+    'timer': 5.0,
+    'timerB': {'value': 0.0, 'direction': 1}
 };
 
 // calls required update methods for UI elements
@@ -466,26 +466,31 @@ ui.update = function(dt) {
             this.pleaseWait = true;
             this.timer > 0 ? this.timer -= 1.5 * dt : (
                 this.pleaseWait = false,
-                this.timer = 3.0
+                this.timer = 5.0,
+                this.timerB.value = 0.0
             );
             break;
         case 'levelcomplete':
             this.pleaseWait = true;
-            this.timer > 0 ? this.timer -= 1.5 * dt : (
+            this.timer > 0 ? this.timer -= 3 * dt : (
                 this.pleaseWait = false,
-                this.timer = 3.0
+                this.timer = 5.0
             );
             break;
         case 'gameover':
             this.pleaseWait = true;
+            this.timerB.value += 2 * this.timerB.direction * dt;
+            if (this.timerB.value >= 1.0 || this.timerB.value <= 0.0) {
+                this.timerB.direction *= -1;
+            }
             this.timer > 0 ? this.timer -= 0.75 * dt : (
                 this.pleaseWait = false,
-                this.timer = 3.0
+                this.timer = 5.0
             );
             break;
         case 'title':
         case 'nextlvlscreen':
-            this.timerB.value += this.timerB.direction * dt;
+            this.timerB.value += 1.5 * this.timerB.direction * dt;
             if (this.timerB.value >= 1.0 || this.timerB.value <= 0.0) {
                 this.timerB.direction *= -1;
             }
@@ -498,6 +503,9 @@ ui.render = function() {
     if (game.state === 'title' || (game.state === 'fakepause' &&
         game.prevState === 'title')) {
         this.renderTitle();
+        if (game.highScore) {
+            this.renderHighScore();
+        }
     }
     if (game.isPausable) {
         this.renderPauseButton();
@@ -537,24 +545,24 @@ ui.render = function() {
 /* TODO: proper title and nicer style */
 ui.renderTitle = function() {
     ctx.font = 'bold 72px sans-serif';
-    ctx.fillText('Game Title', 505/2, 275);
-    ctx.strokeText('Game Title', 505/2, 275);
+    ctx.fillText('Game Title', 505/2, 280);
+    ctx.strokeText('Game Title', 505/2, 280);
     ctx.fillStyle = 'red';
     ctx.beginPath();
-    ctx.moveTo(505/2, 300);
-    ctx.bezierCurveTo((505/2)+50, 300, (505/2)+50, 350, 505/2, 350);
-    ctx.bezierCurveTo((505/2)-50, 350, (505/2)-50, 300, 505/2, 300);
+    ctx.moveTo(505/2, 310);
+    ctx.bezierCurveTo((505/2)+50, 310, (505/2)+50, 360, 505/2, 360);
+    ctx.bezierCurveTo((505/2)-50, 360, (505/2)-50, 310, 505/2, 310);
     ctx.fill();
     ctx.closePath();
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.moveTo((505/2)-15, 315);
-    ctx.lineTo((505/2)+20, 325);
-    ctx.lineTo((505/2)-15, 335);
+    ctx.moveTo((505/2)-15, 325);
+    ctx.lineTo((505/2)+20, 335);
+    ctx.lineTo((505/2)-15, 345);
     ctx.fill();
     ctx.closePath();
-    ctx.font = 'bold 24px sans-serif';
-    ctx.lineWidth = 2;
+    ctx.font = 'bold 26px sans-serif';
+    ctx.lineWidth = 1.5;
     ctx.globalAlpha = this.timerB.value > 1.0 ? 1.0 : this.timerB.value + 0.1;
     ctx.fillText('(click play or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click play or press the spacebar)', 505/2, 565);
@@ -581,21 +589,35 @@ ui.renderLives = function() {
 
 // display player score, displays 'final' score if game over
 ui.renderScore = function() {
-    game.state !== 'gameover' && game.prevState !== 'gameover' ? (
-        ctx.font = 'bold 32px sans-serif',
-        ctx.lineWidth = 2,
-        ctx.fillText(''+player.score, 505/2, 100),
-        ctx.strokeText(''+player.score, 505/2, 100),
-        ctx.font = 'bold 60px sans-serif',
-        ctx.lineWidth = 3
-    ) : (
-        ctx.font = 'bold 32px sans-serif',
-        ctx.lineWidth = 2,
-        ctx.fillText('Final Score: '+player.score, 505/2, 375),
-        ctx.strokeText('Final Score: '+player.score, 505/2, 375),
-        ctx.font = 'bold 60px sans-serif',
-        ctx.lineWidth = 3
-    );
+    ctx.font = 'bold 32px sans-serif';
+    ctx.lineWidth = 2;
+    if (game.state !== 'gameover' && game.prevState !== 'gameover') {
+        ctx.fillText(''+player.score, 505/2, 100);
+        ctx.strokeText(''+player.score, 505/2, 100);
+    } else {
+        ctx.fillText('Final Score: '+player.score, 505/2, 325);
+        ctx.strokeText('Final Score: '+player.score, 505/2, 325);
+        if (player.score > game.highScore) {
+            ctx.fillStyle = 'yellow';
+            ctx.globalAlpha = this.timerB.value > 0.5 ? 1.0 : 0;
+            ctx.fillText('New High Score!', 505/2, 360);
+            ctx.strokeText('New High Score!', 505/2, 360);
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = 'white';
+        }
+    }
+    ctx.font = 'bold 60px sans-serif';
+    ctx.lineWidth = 3;
+};
+
+// displays current high score
+ui.renderHighScore = function() {
+    ctx.font = 'bold 30px sans-serif';
+    ctx.lineWidth = 2;
+    ctx.fillText('High Score: '+game.highScore, 505/2, 100);
+    ctx.strokeText('High Score: '+game.highScore, 505/2, 100);
+    ctx.font = 'bold 60px sans-serif';
+    ctx.lineWidth = 3;
 };
 
 // draw pause/resume button
@@ -624,9 +646,22 @@ ui.renderPauseButton = function() {
 // level: number of current level
 ui.renderLvlStart = function(level) {
     ctx.globalAlpha = this.timer > 1.0 ? 1.0 : this.timer + 0.1;
-    ctx.fillText('Level ' + level, 505/2, 333);
-    ctx.strokeText('Level ' + level, 505/2, 333);
+    ctx.fillText('Level ' + level, 505/2, 280);
+    ctx.strokeText('Level ' + level, 505/2, 280);
     ctx.globalAlpha = 1.0;
+    ctx.font = 'bold 36px sans-serif';
+    ctx.lineWidth = 2;
+    if (this.timer < 3.0) {
+        this.timer > 0.5 ? (
+            ctx.fillText('Ready...', 505/2, 333),
+            ctx.strokeText('Ready...', 505/2, 333)
+        ) : (
+            ctx.fillText('Go!', 505/2, 333),
+            ctx.strokeText('Go!', 505/2, 333)
+        );
+    }
+    ctx.font = 'bold 60px sans-serif';
+    ctx.lineWidth = 3;
 };
 
 // draws level complete text
@@ -641,22 +676,22 @@ ui.renderLvlComplete = function() {
 ui.renderNextScreen = function() {
     ctx.fillStyle = 'blue';
     ctx.beginPath();
-    ctx.moveTo(505/2, 300);
-    ctx.bezierCurveTo((505/2)+50, 300, (505/2)+50, 350, 505/2, 350);
-    ctx.bezierCurveTo((505/2)-50, 350, (505/2)-50, 300, 505/2, 300);
+    ctx.moveTo(505/2, 310);
+    ctx.bezierCurveTo((505/2)+50, 310, (505/2)+50, 360, 505/2, 360);
+    ctx.bezierCurveTo((505/2)-50, 360, (505/2)-50, 310, 505/2, 310);
     ctx.fill();
     ctx.closePath();
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.moveTo((505/2)-10, 330);
-    ctx.lineTo((505/2)+15, 338);
-    ctx.lineTo((505/2)-10, 346);
+    ctx.moveTo((505/2)-10, 340);
+    ctx.lineTo((505/2)+15, 348);
+    ctx.lineTo((505/2)-10, 356);
     ctx.fill();
     ctx.closePath();
     ctx.font = 'bold italic 24px sans-serif';
-    ctx.fillText('Next', 505/2-2, 325);
-    ctx.font = 'bold 24px sans-serif';
-    ctx.lineWidth = 2;
+    ctx.fillText('Next', 505/2-2, 335);
+    ctx.font = 'bold 26px sans-serif';
+    ctx.lineWidth = 1.5;
     ctx.globalAlpha = this.timerB.value > 1.0 ? 1.0 : this.timerB.value + 0.1;
     ctx.fillText('(click Next or press the spacebar)', 505/2, 565);
     ctx.strokeText('(click Next or press the spacebar)', 505/2, 565);
@@ -673,8 +708,8 @@ ui.renderPaused = function() {
 
 // draw game over screen
 ui.renderGameOver = function() {
-    ctx.fillText('GAME OVER', 505/2, 333);
-    ctx.strokeText('GAME OVER', 505/2, 333);
+    ctx.fillText('GAME OVER', 505/2, 280);
+    ctx.strokeText('GAME OVER', 505/2, 280);
 };
 
 // handles mouse-interactive UI elements
@@ -695,7 +730,7 @@ ui.handleClicks = function(e) {
     // clickable play/continue button
     if ((game.state === 'title' || game.state === 'nextlvlscreen') &&
         !this.pleaseWait && x - lBorder > (505/2 - 45) &&
-        x - lBorder < (505/2 + 45) && y - tBorder > 305 && y - tBorder < 345) {
+        x - lBorder < (505/2 + 45) && y - tBorder > 315 && y - tBorder < 355) {
         player.ready = true;
     }
 };
@@ -713,7 +748,9 @@ var game = {
     // holds total time in paused state, is reset each level by .update
     'totalPauseTime': 0.0,
     // timer used for game events
-    'timer': 5.0
+    'timer': 5.0,
+    // stores high scores
+    'highScore': 0
 };
 
 // initializes player and starts the game
@@ -800,6 +837,9 @@ game.update = function(dt) {
             break;
         case 'gameover':
             if (!ui.pleaseWait) {
+                if (player.score > this.highScore) {
+                    this.highScore = player.score;
+                }
                 allEnemies.length = 0;
                 player.reset();
                 player.respawn();
