@@ -62,7 +62,7 @@ var Enemy = function(posX, posY, speed, onPatrol) {
         rows.sm : posY;
 
     this.speed = isNaN(parseFloat(speed)) ? 100 : speed;
-    this.sprite = this.getSprite();
+    this.sprite = this.setSprite();
     this.onPatrol = onPatrol || false;
 };
 
@@ -81,14 +81,14 @@ Enemy.prototype.getSpeed = function() {
 };
 
 // returns a sprite from .sprites object based on enemy movement direction
-Enemy.prototype.getSprite = function () {
+Enemy.prototype.setSprite = function () {
     return (this.speed < 0) ? this.sprites.l : this.sprites.r;
 };
 
 // reverses direction of enemy movement and updates sprite
 Enemy.prototype.changeDir = function () {
     this.speed *= -1;
-    this.sprite = this.getSprite();
+    this.sprite = this.setSprite();
 };
 
 // Update the enemy's position, required method for game
@@ -483,7 +483,7 @@ ui.update = function(dt) {
             if (this.timerB.value >= 1.0 || this.timerB.value <= 0.0) {
                 this.timerB.direction *= -1;
             }
-            this.timer > 0 ? this.timer -= 0.75 * dt : (
+            this.timer > 0 ? this.timer -= dt : (
                 this.pleaseWait = false,
                 this.timer = 5.0
             );
@@ -595,13 +595,13 @@ ui.renderScore = function() {
         ctx.fillText(''+player.score, 505/2, 100);
         ctx.strokeText(''+player.score, 505/2, 100);
     } else {
-        ctx.fillText('Final Score: '+player.score, 505/2, 325);
-        ctx.strokeText('Final Score: '+player.score, 505/2, 325);
+        ctx.fillText('Final Score: '+player.score, 505/2, 330);
+        ctx.strokeText('Final Score: '+player.score, 505/2, 330);
         if (player.score > game.highScore) {
             ctx.fillStyle = 'yellow';
             ctx.globalAlpha = this.timerB.value > 0.5 ? 1.0 : 0;
-            ctx.fillText('New High Score!', 505/2, 360);
-            ctx.strokeText('New High Score!', 505/2, 360);
+            ctx.fillText('New High Score!', 505/2, 365);
+            ctx.strokeText('New High Score!', 505/2, 365);
             ctx.globalAlpha = 1.0;
             ctx.fillStyle = 'white';
         }
