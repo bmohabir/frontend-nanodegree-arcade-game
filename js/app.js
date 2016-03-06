@@ -293,6 +293,11 @@ Player.prototype.update = function(dt) {
 
     // check for enemy touch/graze
     for (i=0; i < numEnemies; i++) {
+        // stop checking for enemy touch if player is dead (or player will lose multiple lives for simultaneously
+        // touching multiple enemies)
+        if (!this.alive) {
+            break;
+        }
         if (this.checkCollide(allEnemies[i])) {
             this.die();
         } else if (this.checkGraze(allEnemies[i])) {
@@ -813,7 +818,7 @@ game.update = function(dt) {
 
     // ends game if player dies and has no lives left
     if (!player.alive) {
-        player.lives ? player.respawn() : this.gameOver();
+        player.lives > 0 ? player.respawn() : this.gameOver();
     }
 };
 
