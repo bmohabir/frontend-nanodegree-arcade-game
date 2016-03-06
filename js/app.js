@@ -523,10 +523,8 @@ ui.render = function() {
         game.prevState === 'levelstart')) {
         this.renderLvlStart(game.level);
     }
-    if (player.sprite && !((game.state === 'levelcomplete' ||
-        game.state === 'nextlvlscreen' || game.state === 'title') ||
-        (game.state === 'fakepause' && (game.prevState === 'levelcomplete' ||
-        game.prevState === 'nextlvlscreen' || game.prevState === 'title')))) {
+    if (player.sprite && (game.state === 'ingame' || game.state === 'paused' ||
+        game.state === 'levelstart' || game.prevState === 'levelstart')) {
         this.renderLives();
     }
     if (game.state === 'paused') {
@@ -563,22 +561,34 @@ ui.renderTitle = function() {
     // play button background
     ctx.fillStyle = 'red';
     ctx.beginPath();
-    ctx.moveTo(505/2, 310);
-    ctx.bezierCurveTo((505/2)+50, 310, (505/2)+50, 360, 505/2, 360);
-    ctx.bezierCurveTo((505/2)-50, 360, (505/2)-50, 310, 505/2, 310);
+    ctx.moveTo(505/2, 317);
+    ctx.bezierCurveTo((505/2)+62, 317, (505/2)+62, 365, 505/2, 365);
+    ctx.bezierCurveTo((505/2)-62, 365, (505/2)-62, 317, 505/2, 317);
     ctx.fill();
     ctx.closePath();
 
     // play button icon
     ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 5;
+    ctx.lineJoin = 'miter';
     ctx.beginPath();
-    ctx.moveTo((505/2)-15, 325);
-    ctx.lineTo((505/2)+20, 335);
-    ctx.lineTo((505/2)-15, 345);
+    ctx.moveTo((505/2)-14, 347);
+    ctx.lineTo((505/2)+19, 357);
+    ctx.lineTo((505/2)-14, 367);
+    ctx.lineTo((505/2)-14, 347);
+    ctx.stroke();
     ctx.fill();
     ctx.closePath();
 
+    // play button text
+    ctx.font = '900 oblique 32px sans-serif';
+    ctx.strokeText('Play', 505/2-2, 340);
+    ctx.fillText('Play', 505/2-2, 340);
+
     // start play instructions
+    ctx.strokeStyle = 'black';
+    ctx.lineJoin = 'round';
     ctx.font = 'bold 26px cursive';
     ctx.lineWidth = 1.5;
     ctx.globalAlpha = this.sawTimer.value > 1.0 ?
@@ -624,8 +634,8 @@ ui.renderScore = function() {
             ctx.fillStyle = 'yellow';
             ctx.globalAlpha = this.sawTimer.value >= 0.5 ? 1.0 : 0;
             ctx.font = '900 38px monospace';
-            ctx.fillText('New High Score!', 255, 365);
-            ctx.strokeText('New High Score!', 255, 365);
+            ctx.fillText('New High Score!', 256, 375);
+            ctx.strokeText('New High Score!', 256, 375);
             ctx.globalAlpha = 1.0;
             ctx.fillStyle = 'white';
         }
@@ -679,12 +689,12 @@ ui.renderLvlStart = function(level) {
     if (this.timer < 3.0) {
         this.timer > 0.5 ? (
             ctx.font = '800 42px sans-serif',
-            ctx.fillText('Ready...', 505/2, 333),
-            ctx.strokeText('Ready...', 505/2, 333)
+            ctx.fillText('Ready...', 505/2, 330),
+            ctx.strokeText('Ready...', 505/2, 330)
         ) : (
-            ctx.font = '900 46px sans-serif',
-            ctx.fillText('GO!', 505/2, 329),
-            ctx.strokeText('GO!', 505/2, 329)
+            ctx.font = '900 48px sans-serif',
+            ctx.fillText('GO!', 505/2, 330),
+            ctx.strokeText('GO!', 505/2, 330)
         );
     }
 };
@@ -694,8 +704,8 @@ ui.renderLvlComplete = function() {
     ctx.font = '800 50px cursive';
     ctx.lineWidth = 2;
     ctx.globalAlpha = this.timer > 1.0 ? 1.0 : this.timer + 0.1;
-    ctx.fillText('Level Complete!', 505/2, 333);
-    ctx.strokeText('Level Complete!', 505/2, 333);
+    ctx.fillText('Level Complete!', 505/2, 330);
+    ctx.strokeText('Level Complete!', 505/2, 330);
     ctx.globalAlpha = 1.0;
 };
 
@@ -704,26 +714,34 @@ ui.renderNextScreen = function() {
     // next button background
     ctx.fillStyle = 'blue';
     ctx.beginPath();
-    ctx.moveTo(505/2, 310);
-    ctx.bezierCurveTo((505/2)+50, 310, (505/2)+50, 360, 505/2, 360);
-    ctx.bezierCurveTo((505/2)-50, 360, (505/2)-50, 310, 505/2, 310);
+    ctx.moveTo(505/2, 317);
+    ctx.bezierCurveTo((505/2)+62, 317, (505/2)+62, 365, 505/2, 365);
+    ctx.bezierCurveTo((505/2)-62, 365, (505/2)-62, 317, 505/2, 317);
     ctx.fill();
     ctx.closePath();
 
     // play icon
     ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 5;
+    ctx.lineJoin = 'miter';
     ctx.beginPath();
-    ctx.moveTo((505/2)-10, 340);
-    ctx.lineTo((505/2)+15, 348);
-    ctx.lineTo((505/2)-10, 356);
+    ctx.moveTo((505/2)-14, 347);
+    ctx.lineTo((505/2)+19, 357);
+    ctx.lineTo((505/2)-14, 367);
+    ctx.lineTo((505/2)-14, 347);
+    ctx.stroke();
     ctx.fill();
     ctx.closePath();
 
-    // next text
-    ctx.font = 'bold italic 24px sans-serif';
-    ctx.fillText('Next', 505/2-2, 335);
+    // next button text
+    ctx.font = '900 oblique 32px sans-serif';
+    ctx.strokeText('Next', 505/2-2, 340);
+    ctx.fillText('Next', 505/2-2, 340);
 
     // next level instruction
+    ctx.strokeStyle = 'black';
+    ctx.lineJoin = 'round';
     ctx.font = 'bold 26px cursive';
     ctx.lineWidth = 1.5;
     ctx.globalAlpha = this.sawTimer.value > 1.0 ?
@@ -766,8 +784,8 @@ ui.handleClicks = function(e) {
 
     // clickable play/continue button
     if ((game.state === 'title' || game.state === 'nextlvlscreen') &&
-        !this.pleaseWait && x - lBorder > (505/2 - 45) &&
-        x - lBorder < (505/2 + 45) && y - tBorder > 315 && y - tBorder < 355) {
+        !this.pleaseWait && x - lBorder > (505/2 - 62) &&
+        x - lBorder < (505/2 + 62) && y - tBorder > 317 && y - tBorder < 365) {
         player.ready = true;
     }
 };
