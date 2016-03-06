@@ -556,8 +556,8 @@ ui.renderTitle = function() {
     ctx.font = '900 72px sans-serif';
     ctx.lineWidth = 3;
     ctx.strokeStyle = 'red';
-    ctx.fillText('Beetle Run', 505/2, 280);
-    ctx.strokeText('Beetle Run', 505/2, 280);
+    ctx.fillText('Bug Run', 505/2, 280);
+    ctx.strokeText('Bug Run', 505/2, 280);
     ctx.strokeStyle = 'black';
 
     // play button background
