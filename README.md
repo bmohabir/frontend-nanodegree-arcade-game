@@ -1,27 +1,29 @@
 # Bug Run
 
-Bug Run is a Frogger-like HTML Canvas game written in object-oriented JavaScript. The game features controls and gameplay elements inspired by "bullet hell" shoot-em-up games. Bug Run was created as part of a project for the Udacity Front-End Web Development Nanodegree program.
+Bug Run is a Frogger-like HTML Canvas game written in object-oriented JavaScript. The game features controls and gameplay elements inspired by "bullet hell" shoot-em-up games.
+
+Bug Run was created as part of a project for the Udacity Front-End Web Development Nanodegree program.
 
 #### Table of Contents
 
-[1 Usage Instructions](#usage)
-[2 Controls](#contols)
-  [2.1 Movement](#movement)
-  [2.2 Miscellaneous](#misc)
-[3 User Interface](#ui)
-  [3.1 In-game](#ingame)
-[4 Gameplay](#gameplay)
-  [4.1 Objective](#objective)
-  [4.2 Levels](#levels)
-  [4.3 Enemies](#gpenemies)
-  [4.4 Score](#score)
-  [4.5 Game Over](#gameover)
-[5 Level Creation](#lvlcreation)
-  [5.1 Levels Object](#lvlsobj)
-    [5.1.1 Level Data](#lvldata)
-  [5.2 Entities](#entities)
-    [5.2.1 Enemies](#lcenemies)
-  [5.3 Example](#example)
+[1 Usage Instructions](#usage)  
+[2 Controls](#controls)  
+  [2.1 Movement](#movement)  
+  [2.2 Miscellaneous](#misc)  
+[3 User Interface](#ui)  
+  [3.1 In-game](#ingame)  
+[4 Gameplay](#gameplay)  
+  [4.1 Objective](#objective)  
+  [4.2 Levels](#levels)  
+  [4.3 Enemies](#gpenemies)  
+  [4.4 Score](#score)  
+  [4.5 Game Over](#gameover)  
+[5 Level Creation](#lvlcreation)  
+  [5.1 Levels Object](#lvlsobj)  
+    [5.1.1 Level Data](#lvldata)  
+  [5.2 Entities](#entities)  
+    [5.2.1 Enemies](#lcenemies)  
+  [5.3 Example](#example)  
 
 <a href name="usage"/>
 ## Usage Instructions
@@ -51,9 +53,9 @@ To begin playing Bug Run, open `index.html` using a web browser.
 
 <a href name="ingame"/>
 ### In-game
-* **Pause Button**:  The botton on the top-left of the screen pauses and unpauses the game when clicked
-* **Score**:  The number at the top of the screen shows the current player score.
-* **Lives**:  The top right of the screen shows the number of lives remaining.
+* **Pause Button**:  Top-left of the screen, pauses and unpauses the game when clicked
+* **Score**:  Number at the top of the screen, shows the current player score
+* **Lives**:  The top right of the screen shows the number of lives remaining
 
 <a href name="gameplay"/>
 ## Gameplay
@@ -81,11 +83,11 @@ The beetles moving across the stone paths will try to stop the player from passi
 ### Score
 
 The player can increase their score in several ways:
-* Completing a level will award the player with 100 points times the number of the level (ie. completing level 4 awards 400 points).
+* Completing a level will award the player with **100 points** times the number of the level (ie. completing level 4 awards 400 points).
 * Completing a level more quickly will award the player bonus completion points. The faster the level is completed, the more bonus points awarded (time is not counted while the game is paused).
 * Grazing the front or back of an enemy without fully touching the enemy awards 'graze' points. The amount of graze points awarded is based on how long the player stays within grazing range of an enemy.
 
-The player score will be decreased by 50 points each time they lose a life.
+The player score will be decreased by **50 points** each time they lose a life.
 
 <a href name="gameover"/>
 ### Game Over
