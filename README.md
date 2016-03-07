@@ -127,5 +127,17 @@ game.levels = {
 
 <a href name ="comingsoon"/>
 ## Coming Soon
+
 * Collectable powerups
-* Character selection (in progress)
+
+### In progress
+
+##### Character selection
+
+To test different characters, use your browser's console to change the value of `player.sprite`. The following are valid values:
+* `'default'`
+* `'catgirl'`
+* `'horngirl'`
+* `'pinkgirl'`
+* `'princess'`
+The value is reset to default on game over.
