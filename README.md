@@ -4,7 +4,7 @@ Bug Run is a Frogger-like HTML Canvas game written in object-oriented JavaScript
 
 ## Usage Instructions
 
-To begin playing Bug Run, open 'index.html' using a web browser.
+To begin playing Bug Run, open `index.html` using a web browser.
 
 ## Controls
 
@@ -85,11 +85,13 @@ See the `Enemy` function in `app.js` for details on enemy constructor parameters
 
 Here is an example of the `game.levels` object containing a single level with four enemy entities:
 
-`game.levels = {
+```javascript
+game.levels = {
     '1': {
         'enemies': [
             [cols.a, rows.sm, 150], [cols.d, rows.sb, 100, true],
             [cols.c, rows.st, 100], [cols.b, rows.sm, 100]
         ]
     }
-};`
+};
+```
