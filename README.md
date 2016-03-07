@@ -1,6 +1,20 @@
-frontend-nanodegree-arcade-game
-===============================
+#Bug Run
 
-Students should use this [rubric](https://www.udacity.com/course/viewer/#!/c-nd001/l-2696458597/m-2687128535) for self-checking their submission.
+Bug Run is a Frogger-like HTML Canvas game written in object-oriented JavaScript. The game features controls and gameplay elements inspired by "bullet-hell" shoot-em-up games.
 
-For detailed instructions on how to get started, check out this [guide](https://docs.google.com/document/d/1v01aScPjSWCCWQLIpFqvg3-vXLH2e8_SZQKC8jNO0Dc/pub?embedded=true).
+## Controls
+
+### Movement
+
+**Up Arrow/W** Moves player up
+**Down Arrow/S** Moves player down
+**Left Arrow/A** Moves player left
+**Right Arrow/D** Moves player right
+**Shift** Slows down player movement while held down
+
+### Interface
+
+**P** Pauses/unpauses game (while ingame)
+**Spacebar** Start game/continue to next level
+
+...
