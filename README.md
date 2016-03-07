@@ -7,23 +7,11 @@ Bug Run was created as part of a project for the Udacity Front-End Web Developme
 #### Table of Contents
 
 [1 Usage Instructions](#usage)  
-[2 Controls](#controls)  
-  [2.1 Movement](#movement)  
-  [2.2 Miscellaneous](#misc)  
+[2 Controls](#controls)   
 [3 User Interface](#ui)  
-  [3.1 In-game](#ingame)  
 [4 Gameplay](#gameplay)  
-  [4.1 Objective](#objective)  
-  [4.2 Levels](#levels)  
-  [4.3 Enemies](#gpenemies)  
-  [4.4 Score](#score)  
-  [4.5 Game Over](#gameover)  
 [5 Level Creation](#lvlcreation)  
-  [5.1 Levels Object](#lvlsobj)  
-    [5.1.1 Level Data](#lvldata)  
-  [5.2 Entities](#entities)  
-    [5.2.1 Enemies](#lcenemies)  
-  [5.3 Example](#example)  
+[6 Coming Soon](#comingsoon)  
 
 <a href name="usage"/>
 ## Usage Instructions
@@ -136,3 +124,8 @@ game.levels = {
     }
 };
 ```
+
+<a href name ="comingsoon"/>
+## Coming Soon
+* Collectable powerups
+* Character selection (in progress)
