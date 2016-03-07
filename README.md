@@ -141,4 +141,4 @@ To test different characters, use your browser's console to change the value of 
 * `'pinkgirl'`
 * `'princess'`
 
-The value is reset to default on game over.
+The value is reset to `'default'` on game over.
