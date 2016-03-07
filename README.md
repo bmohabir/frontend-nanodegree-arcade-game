@@ -125,7 +125,7 @@ game.levels = {
 };
 ```
 
-<a href name ="comingsoon"/>
+<a href name="comingsoon"/>
 ## Coming Soon
 
 * Collectable powerups
